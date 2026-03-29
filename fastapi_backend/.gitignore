@@ -1,0 +1,38 @@
+# Virtual environments
+.venv/
+.venv*/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+coverage/
+
+# Env / secrets
+.env
+
+# Logs
+*.log
+uvicorn.out.log
+uvicorn.err.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Datasets (large, regenerated locally)
+training/datasets/

@@ -1,0 +1,546 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/action-detection/sign-to-text": {
+      "post": {
+        "tags": [
+          "action-detection"
+        ],
+        "summary": "Sign To Text",
+        "operationId": "action-detection-sign_to_text",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionDetectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionDetectionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/action-detection/model-info": {
+      "get": {
+        "tags": [
+          "action-detection"
+        ],
+        "summary": "Model Info",
+        "operationId": "action-detection-model_info",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionDetectionModelInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/action-detection/text-to-sign": {
+      "post": {
+        "tags": [
+          "action-detection"
+        ],
+        "summary": "Text To Sign",
+        "operationId": "action-detection-text_to_sign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextToSignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextToSignResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/action-detection/dataset": {
+      "post": {
+        "tags": [
+          "action-detection"
+        ],
+        "summary": "Save Dataset Sequence",
+        "operationId": "action-detection-save_dataset_sequence",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionDetectionDatasetSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionDetectionDatasetSaveResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health-health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionDetectionDatasetSaveRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Action label, for example hello, thanks, or iloveyou."
+          },
+          "sequence": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Sequence",
+            "description": "Sequence of 30 frames, each frame containing 1662 holistic keypoint values."
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "sequence"
+        ],
+        "title": "ActionDetectionDatasetSaveRequest"
+      },
+      "ActionDetectionDatasetSaveResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/ActionDetectionDatasetSaveResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "ActionDetectionDatasetSaveResponse"
+      },
+      "ActionDetectionDatasetSaveResult": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "sequence_index": {
+            "type": "integer",
+            "title": "Sequence Index"
+          },
+          "frame_count": {
+            "type": "integer",
+            "title": "Frame Count"
+          },
+          "saved_dir": {
+            "type": "string",
+            "title": "Saved Dir"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "sequence_index",
+          "frame_count",
+          "saved_dir"
+        ],
+        "title": "ActionDetectionDatasetSaveResult"
+      },
+      "ActionDetectionModelInfoResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/ActionDetectionModelInfoResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "ActionDetectionModelInfoResponse"
+      },
+      "ActionDetectionModelInfoResult": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "sequence_length": {
+            "type": "integer",
+            "title": "Sequence Length"
+          },
+          "feature_size": {
+            "type": "integer",
+            "title": "Feature Size"
+          },
+          "sample_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Count"
+          },
+          "test_accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Test Accuracy"
+          },
+          "source_data_dir": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Data Dir"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_name",
+          "labels",
+          "sequence_length",
+          "feature_size"
+        ],
+        "title": "ActionDetectionModelInfoResult"
+      },
+      "ActionDetectionRequest": {
+        "properties": {
+          "sequence": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Sequence",
+            "description": "Sequence of 30 frames, each frame containing 1662 holistic keypoint values."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence"
+        ],
+        "title": "ActionDetectionRequest"
+      },
+      "ActionDetectionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/ActionDetectionResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "ActionDetectionResponse"
+      },
+      "ActionDetectionResult": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Scores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "confidence",
+          "scores"
+        ],
+        "title": "ActionDetectionResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "TextToSignRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text",
+            "description": "Free-form English text to translate into sign tokens."
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TextToSignRequest"
+      },
+      "TextToSignResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "result": {
+            "$ref": "#/components/schemas/TextToSignResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "TextToSignResponse"
+      },
+      "TextToSignResult": {
+        "properties": {
+          "normalized_text": {
+            "type": "string",
+            "title": "Normalized Text"
+          },
+          "gloss": {
+            "type": "string",
+            "title": "Gloss"
+          },
+          "matched_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matched Actions"
+          },
+          "unsupported_tokens": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unsupported Tokens"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TextToSignSegment"
+            },
+            "type": "array",
+            "title": "Segments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "normalized_text",
+          "gloss",
+          "matched_actions",
+          "unsupported_tokens",
+          "segments"
+        ],
+        "title": "TextToSignResult"
+      },
+      "TextToSignSegment": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "gloss": {
+            "type": "string",
+            "title": "Gloss"
+          },
+          "supported": {
+            "type": "boolean",
+            "title": "Supported"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "gloss",
+          "supported",
+          "mode"
+        ],
+        "title": "TextToSignSegment"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
