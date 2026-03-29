@@ -3,7 +3,8 @@ name = "app"
 version = "0.0.6"
 description = ""
 authors = [{ name = "Anderson Resende", email = "anderson@vinta.com.br" }]
-requires-python = ">=3.11,<3.14"
+# TensorFlow chỉ có wheel cho CPython 3.11–3.12; TF 2.18+ tương thích numpy 2.x.
+requires-python = ">=3.11,<3.13"
 readme = "README.md"
 dependencies = [
     "fastapi[standard]>=0.115.0,<0.116",
@@ -11,7 +12,7 @@ dependencies = [
     "pydantic-settings>=2.5.2,<3",
     "fastapi-pagination==0.13.3",
     "numpy>=2.0.0,<3",
-    "tensorflow>=2.17.0,<2.18",
+    "tensorflow>=2.18.0,<2.19",
 ]
 
 [dependency-groups]

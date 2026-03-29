@@ -19,9 +19,6 @@ build/
 htmlcov/
 coverage/
 
-# Env / secrets
-.env
-
 # Logs
 *.log
 uvicorn.out.log

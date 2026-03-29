@@ -1,16 +1,35 @@
-## Installation
+# Chạy project
 
-Requires **Node.js** (npm), **Python 3.11+**, and **[uv](https://docs.astral.sh/uv/)** for the backend.
+## Yêu cầu
 
-From the repo root:
+| Thành phần | Ghi chú |
+|------------|---------|
+| **Node.js** (npm) | Cho frontend và script gốc |
+| **Python 3.11 hoặc 3.12** | **Không dùng Python 3.13** — TensorFlow chưa có wheel cho 3.13 |
+| **[uv](https://docs.astral.sh/uv/)** | Quản lý venv và cài backend (`winget install astral-sh.uv` hoặc `pip install uv`) |
+
+## Các bước
+
+1. Cài **Python 3.12** (hoặc 3.11), đặt làm mặc định hoặc chỉ `uv` dùng đúng bản (trong `fastapi_backend` có file `.python-version` = `3.12`).
+
+2. Từ thư mục gốc repo:
 
 ```bash
 npm install
-npm run setup
+npm run setup:backend
 npm run dev
 ```
 
-- `npm run setup` installs frontend deps, syncs the backend with `uv`, and copies `.env` files from `.env.example` when missing.
-- `npm run dev` starts the FastAPI backend and Next.js together (frontend: http://localhost:3000, API: http://localhost:8000).
+- `npm install` cài dependency Node và chạy `postinstall` (cài thêm frontend, copy `.env` mẫu nếu thiếu).
+- `npm run setup:backend` chạy `uv sync` trong `fastapi_backend` (tạo `.venv`, cài TensorFlow — lần đầu có thể lâu).
 
-Optional database: `npm run dev:db` (Docker).
+3. Mở trình duyệt:
+
+- Frontend: http://localhost:3000  
+- API: http://localhost:8000  
+
+## Lỗi thường gặp
+
+- **`tensorflow` không cài được trên Python 3.13** — Cài Python 3.12, xóa thư mục `fastapi_backend/.venv` nếu đã tạo bằng 3.13, rồi chạy lại `npm run setup:backend`.
+- **`uv` không nhận lệnh** — Cài `uv` hoặc `pip install uv`, rồi dùng `python -m uv sync` trong `fastapi_backend`.
+- **Xung đột numpy / TensorFlow** — Repo đã ghim TensorFlow 2.18.x + numpy 2.x; giữ `uv.lock` và chạy `uv sync` trong `fastapi_backend`.

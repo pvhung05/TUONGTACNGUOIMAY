@@ -41,8 +41,9 @@ desktop.ini
 *.swp
 *.swo
 
-# Env / secrets
+# Env / secrets (repo tracks fastapi_backend/.env — đừng đẩy secret thật lên remote công khai)
 .env
+!fastapi_backend/.env
 .env.local
 .env.*.local
 *.pem

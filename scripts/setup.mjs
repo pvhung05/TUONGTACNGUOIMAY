@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { syncBackend } from "./backend-exec.mjs";
 
 const root = process.cwd();
 const frontendDir = path.join(root, "nextjs-frontend");
@@ -33,17 +34,13 @@ if (!run("npm", ["install", "--prefix", "nextjs-frontend"], root)) {
   process.exit(1);
 }
 
-console.log("Checking backend toolchain...");
-const uvAvailable = run("uv", ["--version"], root);
-
-if (uvAvailable) {
-  console.log("Syncing backend dependencies...");
-  if (!run("uv", ["sync"], backendDir)) {
-    process.exit(1);
-  }
+console.log("Syncing backend dependencies...");
+if (!syncBackend(backendDir)) {
+  console.log("");
+  console.log("Backend sync failed. Install uv: https://docs.astral.sh/uv/");
+  console.log("Or: pip install uv   then run: npm run setup:backend");
 } else {
-  console.log("uv is not installed. Skipped backend dependency sync.");
-  console.log("Install uv, then run: npm run setup:backend");
+  console.log("Backend dependencies synced.");
 }
 
 console.log("");
