@@ -63,8 +63,6 @@ type Unit = {
 
 const navItems: NavItem[] = [
   { label: "Learn", kind: "learn" },
-  { label: "Text To Sign", kind: "textToSign" },
-  { label: "Sign To Text", kind: "signToText" },
 ];
 
 const units: Unit[] = [
@@ -1212,13 +1210,13 @@ function SignToTextExperience() {
     confidence !== null ? `${Math.round(confidence * 100)}% Confidence` : "Awaiting gesture";
 
   return (
-    <section style={{ width: TOOL_WIDTH }}>
+    <section style={{ width: "90%", margin: "0 auto" }}>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1.18fr) minmax(0, 0.82fr)",
-          columnGap: 22,
-          rowGap: 14,
+          gridTemplateColumns: "1fr 1fr",
+          columnGap: 24,
+          rowGap: 16,
           alignItems: "start",
         }}
       >
@@ -1228,8 +1226,8 @@ function SignToTextExperience() {
           <div
             style={{
               position: "relative",
-              minHeight: 660,
-              borderRadius: 26,
+              minHeight: 700,
+              borderRadius: 28,
               border: `2px solid ${theme.colors.border}`,
               background:
                 "linear-gradient(145deg, rgba(229, 247, 215, 0.9) 0%, rgba(255, 255, 255, 0.96) 100%)",
@@ -1240,7 +1238,7 @@ function SignToTextExperience() {
             <div
               style={{
                 position: "absolute",
-                inset: 28,
+                inset: 16,
                 borderRadius: 22,
                 background: "#FFFFFF",
                 border: "2px solid rgba(88, 204, 2, 0.18)",
@@ -1338,7 +1336,7 @@ function SignToTextExperience() {
 
         <div
           style={{
-            gridColumn: 1,
+            gridColumn: "1 / -1",
             gridRow: 2,
             display: "flex",
             alignItems: "center",
@@ -1347,6 +1345,7 @@ function SignToTextExperience() {
             fontSize: 15,
             lineHeight: "24px",
             fontWeight: 700,
+            paddingTop: 8,
             ...signlearnoText,
           }}
         >
@@ -1363,11 +1362,11 @@ function SignToTextExperience() {
           style={{
             gridColumn: 2,
             gridRow: 1,
-            minHeight: 660,
-            borderRadius: 26,
+            minHeight: 700,
+            borderRadius: 28,
             border: `2px solid ${theme.colors.border}`,
             background: theme.colors.surface,
-            padding: 20,
+            padding: 28,
             boxSizing: "border-box",
             boxShadow: "0 22px 50px rgba(17, 24, 39, 0.06)",
             display: "flex",
@@ -1438,12 +1437,12 @@ function SignToTextExperience() {
 
       <div
         style={{
-          marginTop: 26,
-          borderRadius: 20,
+          marginTop: 24,
+          borderRadius: 28,
           border: "2px solid rgba(88, 204, 2, 0.22)",
           background:
             "linear-gradient(135deg, rgba(229, 247, 215, 0.9) 0%, rgba(255, 255, 255, 0.96) 100%)",
-          padding: "18px 20px",
+          padding: "20px 26px",
           display: "flex",
           alignItems: "center",
           gap: 16,
@@ -1525,7 +1524,7 @@ function TextToSignExperience() {
   };
 
   return (
-    <section style={{ width: TOOL_WIDTH }}>
+    <section style={{ width: TOOL_WIDTH, margin: "0 auto" }}>
       <div
         style={{
           borderRadius: 30,
@@ -1534,10 +1533,11 @@ function TextToSignExperience() {
           background: theme.colors.surface,
           boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 0.98fr)",
+          gridTemplateColumns: "1fr 1fr",
         }}
       >
-        <section style={{ padding: 34 }}>
+        {/* Left Column: Text Input */}
+        <section style={{ padding: 36 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Type Message</span>
             <span
@@ -1549,7 +1549,7 @@ function TextToSignExperience() {
                 ...signlearnoText,
               }}
             >
-              Video Translation
+              Input
             </span>
           </div>
 
@@ -1629,6 +1629,7 @@ function TextToSignExperience() {
           </div>
         </section>
 
+        {/* Middle Column: Video Translation */}
         <section
           style={{
             padding: 0,
@@ -1796,81 +1797,82 @@ function TextToSignExperience() {
         </section>
       </div>
 
+      {/* Bottom Section: Recently Translated */}
       <section
         style={{
-          marginTop: 22,
-          width: TOOL_WIDTH,
-          borderRadius: 28,
-          border: `2px solid ${theme.colors.border}`,
+          marginTop: 24,
+          padding: 28,
+          borderRadius: 30,
           background: theme.colors.surface,
-          padding: 24,
-          boxSizing: "border-box",
-          boxShadow: "0 22px 44px rgba(15, 23, 42, 0.05)",
+          border: `2px solid ${theme.colors.border}`,
+          boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Clock3 size={20} color={theme.colors.green} />
-            <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>
-              Recently Translated
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setRecentPhrases([])}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: theme.colors.green,
-              cursor: "pointer",
-              fontSize: 16,
-              lineHeight: "22px",
-              fontWeight: 700,
-              ...signlearnoText,
-            }}
-          >
-            Clear History
-          </button>
-        </div>
-
-        <div style={{ marginTop: 20, display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {recentPhrases.map((phrase) => (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Clock3 size={20} color={theme.colors.green} />
+              <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>
+                Recently Translated
+              </span>
+            </div>
             <button
-              key={phrase}
               type="button"
-              onClick={() => {
-                setInputText(phrase);
-                void runTranslation(phrase);
-              }}
+              onClick={() => setRecentPhrases([])}
               style={{
-                padding: "15px 18px",
-                borderRadius: 999,
-                border: `2px solid ${theme.colors.border}`,
-                background:
-                  "linear-gradient(180deg, rgba(229, 247, 215, 0.28) 0%, rgba(255,255,255,0.92) 100%)",
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
+                border: "none",
+                background: "transparent",
+                color: theme.colors.green,
                 cursor: "pointer",
-                color: theme.colors.textStrong,
                 fontSize: 16,
                 lineHeight: "22px",
-                fontWeight: 500,
+                fontWeight: 700,
                 ...signlearnoText,
               }}
             >
-              <span>&ldquo;{phrase}&rdquo;</span>
-              <ArrowUpRight size={18} color={theme.colors.green} />
+              Clear
             </button>
-          ))}
-        </div>
-      </section>
+          </div>
+
+          <div style={{ marginTop: 20, display: "flex", flexWrap: "wrap", gap: 12 }}>
+            {recentPhrases.map((phrase) => (
+              <button
+                key={phrase}
+                type="button"
+                onClick={() => {
+                  setInputText(phrase);
+                  void runTranslation(phrase);
+                }}
+                style={{
+                  padding: "15px 18px",
+                  borderRadius: 999,
+                  border: `2px solid ${theme.colors.border}`,
+                  background:
+                    "linear-gradient(180deg, rgba(229, 247, 215, 0.28) 0%, rgba(255,255,255,0.92) 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  cursor: "pointer",
+                  color: theme.colors.textStrong,
+                  fontSize: 16,
+                  lineHeight: "22px",
+                  fontWeight: 500,
+                  ...signlearnoText,
+                  textAlign: "left",
+                }}
+              >
+                <span>&ldquo;{phrase}&rdquo;</span>
+              </button>
+            ))}
+          </div>
+        </section>
     </section>
   );
 }
 
-export function SignTranslatorDemo() {
-  const [activeNav, setActiveNav] = useState<SignLearnoNavKind>("learn");
+export function SignTranslatorDemo({ translatorMode }: { translatorMode?: "textToSign" | "signToText" } = {}) {
+  const [activeNav, setActiveNav] = useState<SignLearnoNavKind>(translatorMode || "learn");
   const [unitPage, setUnitPage] = useState(0);
   const [activeGuidebook, setActiveGuidebook] = useState(units[0].title);
   const [activeNodeId, setActiveNodeId] = useState(`${units[0].title}-0`);
@@ -1888,21 +1890,15 @@ export function SignTranslatorDemo() {
     setActiveNodeId(`${nextUnit.title}-0`);
   };
 
-  return (
+  return translatorMode ? (
+    // Translator mode - simplified layout without sidebar
+    <div style={{ width: "100%" }}>
+      {translatorMode === "textToSign" ? <TextToSignExperience /> : <SignToTextExperience />}
+    </div>
+  ) : (
+    // Learn mode - full interface with sidebar
     <main style={{ minHeight: "100vh", overflowX: "auto", background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
       <div style={{ width: 1440, minHeight: pageHeight, margin: "0 auto" }}>
-        <header style={{ width: 1440, height: 70, borderBottom: `2px solid ${theme.colors.border}`, background: theme.colors.surface }}>
-          <div style={{ width: 1328, height: 68, margin: "0 auto", padding: "0 40px", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ color: theme.colors.green, fontSize: 34, lineHeight: "34px", fontWeight: 800, letterSpacing: -1.2, textTransform: "lowercase", ...signlearnoText }}>
-              {theme.brandName}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 34 }}>
-              <HeaderMetric icon={<Flame size={25} color={theme.colors.orange} fill={theme.colors.orange} />} value="1" color={theme.colors.orange} />
-              <HeaderMetric icon={<Gem size={24} color={theme.colors.border} fill={theme.colors.border} />} value="0" color={theme.colors.border} />
-            </div>
-          </div>
-        </header>
-
         <div style={{ width: 1304, margin: "24px auto 64px", display: "flex", gap: LAYOUT_GAP, paddingLeft: 0, boxSizing: "border-box" }}>
           <aside style={{ width: SIDEBAR_WIDTH, display: "flex", flexDirection: "column", gap: 10 }}>
             {navItems.map((item) => (
