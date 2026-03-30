@@ -7,8 +7,8 @@ import { Flame, Gem, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const navigation = [
-  { name: "Home", href: "/landing", icon: "home" },
-  { name: "Learn", href: "/", icon: "learn" },
+  { name: "Home", href: "/", icon: "home" },
+  { name: "Learn", href: "/learn", icon: "learn" },
   { name: "Translator", href: "/translator", icon: "translator" },
   { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
 ];
