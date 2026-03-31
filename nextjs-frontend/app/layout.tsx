@@ -14,8 +14,12 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SignLearn Translator Blueprint Demo",
-  description: "Blueprint-inspired English sign translator with realtime gesture and landmark fallback.",
+  title: "SignLearn - Learn Sign Language with AI",
+  description: "A comprehensive platform to learn sign language with real-time gesture translation, AI-powered lessons, and interactive practice tools.",
+  viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +28,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="theme-color" content="#58cc02" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
