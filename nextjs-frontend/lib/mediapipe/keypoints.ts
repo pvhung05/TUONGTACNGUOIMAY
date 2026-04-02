@@ -1,21 +1,8 @@
-type HolisticLandmark = {
-  x: number;
-  y: number;
-  z: number;
-  visibility?: number;
-};
+/* Holistic Keypoints Processing */
+import { SIGN_SEQUENCE_LENGTH, SIGN_FEATURE_SIZE } from "@/lib/constants/holistic";
+import type { HolisticLandmark, HolisticResult } from "@/lib/types";
 
-type HolisticResult = {
-  poseLandmarks?: HolisticLandmark[];
-  faceLandmarks?: HolisticLandmark[];
-  leftHandLandmarks?: HolisticLandmark[];
-  rightHandLandmarks?: HolisticLandmark[];
-};
-
-export const SIGN_SEQUENCE_LENGTH = 30;
-export const SIGN_FEATURE_SIZE = 1662;
-
-function createZeroVector(length: number) {
+function createZeroVector(length: number): number[] {
   return Array.from({ length }, () => 0);
 }
 
@@ -23,7 +10,7 @@ function flattenLandmarks(
   points: HolisticLandmark[] | undefined,
   expectedLength: number,
   includeVisibility: boolean,
-) {
+): number[] {
   if (!points?.length) {
     return createZeroVector(expectedLength);
   }
@@ -41,7 +28,11 @@ function flattenLandmarks(
   return [...vector, ...createZeroVector(expectedLength - vector.length)];
 }
 
-export function extractHolisticKeypoints(result: HolisticResult) {
+/**
+ * Extract holistic keypoints from MediaPipe results
+ * Combines pose, face, left hand and right hand landmarks into a single feature vector
+ */
+export function extractHolisticKeypoints(result: HolisticResult): number[] {
   const pose = flattenLandmarks(result.poseLandmarks, 33 * 4, true);
   const face = flattenLandmarks(result.faceLandmarks?.slice(0, 468), 468 * 3, false);
   const leftHand = flattenLandmarks(result.leftHandLandmarks, 21 * 3, false);
@@ -49,3 +40,5 @@ export function extractHolisticKeypoints(result: HolisticResult) {
 
   return [...pose, ...face, ...leftHand, ...rightHand];
 }
+
+export { SIGN_SEQUENCE_LENGTH, SIGN_FEATURE_SIZE };

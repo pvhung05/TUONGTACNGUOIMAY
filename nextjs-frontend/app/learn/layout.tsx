@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme } from "@/components/signlearno/theme";
 
-export default function TranslatorLayout({ children }: { children: React.ReactNode }) {
+export default function LearnLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
