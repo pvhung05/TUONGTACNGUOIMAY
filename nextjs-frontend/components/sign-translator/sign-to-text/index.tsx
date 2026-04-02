@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Clock3, Copy, Languages, Sparkles, Video, Volume2 } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { extractHolisticKeypoints, SIGN_FEATURE_SIZE, SIGN_SEQUENCE_LENGTH } from "@/lib/holistic-keypoints";
-import { drawDetectedLabel, drawHolisticLandmarks, drawProbabilityBars, type HolisticDrawResults } from "@/lib/mediapipe-drawing";
-import { predictSignToText } from "@/lib/sign-translation-api";
+import { extractHolisticKeypoints, SIGN_FEATURE_SIZE, SIGN_SEQUENCE_LENGTH } from "@/lib/mediapipe";
+import { drawDetectedLabel, drawHolisticLandmarks, drawProbabilityBars, type HolisticDrawResults } from "@/lib/mediapipe";
+import { predictSignToText } from "@/lib/api/sign-translation";
 import { formatSession, describeCameraError, getCameraStream, humanizeDetectedLabel, resolveHolisticConstructor } from "../utils";
 import { ToolIconButton, ToolStatCard } from "../ui/shared";
 

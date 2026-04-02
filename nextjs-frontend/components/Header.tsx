@@ -19,6 +19,10 @@ const navigation = [
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [translatorDropdownOpen, setTranslatorDropdownOpen] = useState(false);
+  const [mobileTranslatorOpen, setMobileTranslatorOpen] = useState(false);
+  const [learnDropdownOpen, setLearnDropdownOpen] = useState(false);
+  const [mobileLearnOpen, setMobileLearnOpen] = useState(false);
 
   return (
     <header
@@ -73,6 +77,160 @@ export function Header() {
           className="hidden md:flex"
         >
           {navigation.map((item) => {
+            if (item.name === "Translator") {
+              return (
+                <div
+                  key={item.href}
+                  style={{ position: "relative" }}
+                  onMouseEnter={() => setTranslatorDropdownOpen(true)}
+                  onMouseLeave={() => setTranslatorDropdownOpen(false)}
+                >
+                  <div
+                    style={{
+                      padding: "10px 18px",
+                      borderRadius: 12,
+                      background: pathname.startsWith("/translator") ? theme.colors.greenSoft : "transparent",
+                      color: pathname.startsWith("/translator") ? theme.colors.green : theme.colors.textMuted,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 200ms ease",
+                      ...signlearnoText,
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                  {translatorDropdownOpen && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        marginTop: 4,
+                        borderRadius: 12,
+                        background: theme.colors.surface,
+                        border: `2px solid ${theme.colors.border}`,
+                        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+                        zIndex: 50,
+                        minWidth: 220,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Link href="/translator/signtotext">
+                        <div
+                          style={{
+                            padding: "12px 18px",
+                            cursor: "pointer",
+                            color: pathname === "/translator/signtotext" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            transition: "all 200ms ease",
+                            background: pathname === "/translator/signtotext" ? theme.colors.greenSoft : "transparent",
+                            ...signlearnoText,
+                          }}
+                        >
+                          Sign to Text
+                        </div>
+                      </Link>
+                      <Link href="/translator/texttosign">
+                        <div
+                          style={{
+                            padding: "12px 18px",
+                            cursor: "pointer",
+                            color: pathname === "/translator/texttosign" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            transition: "all 200ms ease",
+                            background: pathname === "/translator/texttosign" ? theme.colors.greenSoft : "transparent",
+                            borderTop: `1px solid ${theme.colors.border}`,
+                            ...signlearnoText,
+                          }}
+                        >
+                          Text to Sign
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (item.name === "Learn") {
+              return (
+                <div
+                  key={item.href}
+                  style={{ position: "relative" }}
+                  onMouseEnter={() => setLearnDropdownOpen(true)}
+                  onMouseLeave={() => setLearnDropdownOpen(false)}
+                >
+                  <div
+                    style={{
+                      padding: "10px 18px",
+                      borderRadius: 12,
+                      background: pathname.startsWith("/learn") ? theme.colors.greenSoft : "transparent",
+                      color: pathname.startsWith("/learn") ? theme.colors.green : theme.colors.textMuted,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 200ms ease",
+                      ...signlearnoText,
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                  {learnDropdownOpen && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        marginTop: 4,
+                        borderRadius: 12,
+                        background: theme.colors.surface,
+                        border: `2px solid ${theme.colors.border}`,
+                        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+                        zIndex: 50,
+                        minWidth: 220,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Link href="/learn/lesson">
+                        <div
+                          style={{
+                            padding: "12px 18px",
+                            cursor: "pointer",
+                            color: pathname === "/learn/lesson" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            transition: "all 200ms ease",
+                            background: pathname === "/learn/lesson" ? theme.colors.greenSoft : "transparent",
+                            ...signlearnoText,
+                          }}
+                        >
+                          Lesson
+                        </div>
+                      </Link>
+                      <Link href="/learn/practice">
+                        <div
+                          style={{
+                            padding: "12px 18px",
+                            cursor: "pointer",
+                            color: pathname === "/learn/practice" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            transition: "all 200ms ease",
+                            background: pathname === "/learn/practice" ? theme.colors.greenSoft : "transparent",
+                            borderTop: `1px solid ${theme.colors.border}`,
+                            ...signlearnoText,
+                          }}
+                        >
+                          Practice
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            }
             const isActive = pathname === item.href;
             return (
               <Link key={item.href} href={item.href}>
@@ -183,6 +341,132 @@ export function Header() {
           className="md:hidden"
         >
           {navigation.map((item) => {
+            if (item.name === "Translator") {
+              return (
+                <div key={item.href}>
+                  <div
+                    style={{
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      background: pathname.startsWith("/translator") ? theme.colors.greenSoft : "transparent",
+                      color: pathname.startsWith("/translator") ? theme.colors.green : theme.colors.textMuted,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      ...signlearnoText,
+                    }}
+                    onClick={() => setMobileTranslatorOpen(!mobileTranslatorOpen)}
+                  >
+                    {item.name} {mobileTranslatorOpen ? "▼" : "▶"}
+                  </div>
+                  {mobileTranslatorOpen && (
+                    <>
+                      <Link href="/translator/signtotext">
+                        <div
+                          style={{
+                            padding: "10px 16px",
+                            marginLeft: 12,
+                            borderRadius: 8,
+                            background: pathname === "/translator/signtotext" ? theme.colors.greenSoft : "transparent",
+                            color: pathname === "/translator/signtotext" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            marginTop: 6,
+                            ...signlearnoText,
+                          }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Sign to Text
+                        </div>
+                      </Link>
+                      <Link href="/translator/texttosign">
+                        <div
+                          style={{
+                            padding: "10px 16px",
+                            marginLeft: 12,
+                            borderRadius: 8,
+                            background: pathname === "/translator/texttosign" ? theme.colors.greenSoft : "transparent",
+                            color: pathname === "/translator/texttosign" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            marginTop: 6,
+                            ...signlearnoText,
+                          }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Text to Sign
+                        </div>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              );
+            }
+            if (item.name === "Learn") {
+              return (
+                <div key={item.href}>
+                  <div
+                    style={{
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      background: pathname.startsWith("/learn") ? theme.colors.greenSoft : "transparent",
+                      color: pathname.startsWith("/learn") ? theme.colors.green : theme.colors.textMuted,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      ...signlearnoText,
+                    }}
+                    onClick={() => setMobileLearnOpen(!mobileLearnOpen)}
+                  >
+                    {item.name} {mobileLearnOpen ? "▼" : "▶"}
+                  </div>
+                  {mobileLearnOpen && (
+                    <>
+                      <Link href="/learn/lesson">
+                        <div
+                          style={{
+                            padding: "10px 16px",
+                            marginLeft: 12,
+                            borderRadius: 8,
+                            background: pathname === "/learn/lesson" ? theme.colors.greenSoft : "transparent",
+                            color: pathname === "/learn/lesson" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            marginTop: 6,
+                            ...signlearnoText,
+                          }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Lesson
+                        </div>
+                      </Link>
+                      <Link href="/learn/practice">
+                        <div
+                          style={{
+                            padding: "10px 16px",
+                            marginLeft: 12,
+                            borderRadius: 8,
+                            background: pathname === "/learn/practice" ? theme.colors.greenSoft : "transparent",
+                            color: pathname === "/learn/practice" ? theme.colors.green : theme.colors.textMuted,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            marginTop: 6,
+                            ...signlearnoText,
+                          }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Practice
+                        </div>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              );
+            }
             const isActive = pathname === item.href;
             return (
               <Link key={item.href} href={item.href}>

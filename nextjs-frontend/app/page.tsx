@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header, Footer } from "@/components/shared";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 

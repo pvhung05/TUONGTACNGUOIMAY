@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Clock3, SendHorizontal } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { TOOL_WIDTH, TEXT_TO_SIGN_PLACEHOLDER } from "../constants";
-import { translateTextToSign, type TextToSignResult } from "@/lib/sign-translation-api";
+import { translateTextToSign } from "@/lib/api/sign-translation";
+import type { TextToSignResult } from "@/lib/types";
 
 export function TextToSignExperience() {
   const [inputText, setInputText] = useState("");
@@ -146,7 +147,7 @@ export function TextToSignExperience() {
                   </div>
 
                   <div style={{ flex: 1, minHeight: 0, borderRadius: 20, border: "2px solid rgba(88, 204, 2, 0.18)", background: "linear-gradient(180deg, rgba(221, 244, 255, 0.24) 0%, rgba(255,255,255,1) 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, boxSizing: "border-box" }}>
-                    <div style={{ width: "100%", maxWidth: 440, aspectRatio: "4 / 5", borderRadius: 18, overflow: "hidden", background: "#F7FAFC", boxShadow: "0 18px 36px rgba(17, 24, 39, 0.08)" }}>
+                    <div style={{ width: "100%", aspectRatio: "4 / 5", borderRadius: 18, overflow: "hidden", background: "#F7FAFC", boxShadow: "0 18px 36px rgba(17, 24, 39, 0.08)" }}>
                       <video
                         key={translation.video_url}
                         src={translation.video_url}
