@@ -1,158 +1,149 @@
+import { useState } from "react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { PathNodeSymbol, XpChestIllustration } from "@/components/signlearno/icons";
-import type { PathNode, Unit } from "../types";
-import { MAIN_WIDTH, PATH_BOTTOM_SPACE, RIGHT_RAIL_WIDTH } from "../constants";
-import { getNodeFrame, buildConnectorPath } from "../utils";
-import { GuidebookButton } from "../ui/shared";
+import { XpChestIllustration } from "@/components/signlearno/icons";
+import type { Unit } from "../types";
+import { RIGHT_RAIL_WIDTH } from "../constants";
 
-export function PathNodeButton({ node, active, onClick }: { node: PathNode; active: boolean; onClick: () => void }) {
-  if (node.kind === "start" && node.color && node.bubbleText) {
-    const frame = getNodeFrame(node);
-    const bubbleWidth = node.bubbleText === "START" ? 82 : 130;
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        style={{
-          position: "absolute",
-          left: node.left,
-          top: node.top,
-          width: frame.width,
-          height: frame.height,
-          border: "none",
-          background: "transparent",
-          padding: 0,
-          cursor: "pointer",
-          transition: "transform 140ms ease",
-          transform: active ? "translateY(-6px) scale(1.03)" : "translateY(0)",
-          overflow: "visible",
-          zIndex: 2,
-        }}
-      >
+export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit: Unit) => void }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+      {units.map((unit, index) => (
         <div
+          key={index}
+          onClick={() => onSelect(unit)}
           style={{
-            position: "absolute",
-            left: node.bubbleText === "START" ? 18 : -6,
-            top: -44,
-            width: bubbleWidth,
-            height: 44,
-            borderRadius: theme.radius.bubble,
+            position: "relative",
+            aspectRatio: "1 / 1",
+            borderRadius: theme.radius.unit,
             background: theme.colors.surface,
             border: `2px solid ${theme.colors.border}`,
+            borderBottom: `6px solid ${theme.colors.border}`,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            color: node.color,
-            boxSizing: "border-box",
-            ...signlearnoUpperLabel,
+            padding: 16,
+            textAlign: "center",
+            cursor: "pointer",
+            transition: "transform 140ms ease, border-color 140ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(2px)";
+            e.currentTarget.style.borderBottomWidth = "4px";
+            e.currentTarget.style.borderColor = theme.colors.green;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.borderBottomWidth = "6px";
+            e.currentTarget.style.borderColor = theme.colors.border;
           }}
         >
-          {node.bubbleText}
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: frame.radius,
-            background: theme.colors.surface,
-            overflow: "visible",
-            boxShadow: active
-              ? `0 ${frame.lift + 3}px 0 ${theme.colors.nodeShadow}, 0 0 0 5px ${theme.colors.focus}, 0 ${frame.lift + 6}px 24px rgba(0,0,0,0.14)`
-              : `0 ${frame.lift}px 0 ${theme.colors.nodeShadow}, 0 ${frame.lift + 4}px 18px rgba(0,0,0,0.08)`,
-          }}
-        >
-          <div
-            style={{ position: "absolute", right: 14, top: 10, width: 28, height: 42, borderRadius: "18px 18px 18px 4px", background: theme.colors.yellow, transform: "rotate(16deg)", opacity: 0.96 }}
-          />
-          <div style={{ position: "absolute", left: 13, right: 13, top: 10, height: 20, borderRadius: theme.radius.pill, background: "rgba(255,255,255,0.42)" }} />
-          <div style={{ position: "absolute", left: 12, right: 12, top: 12, bottom: 12, borderRadius: 30, background: node.color, boxShadow: "inset 0 -10px 0 rgba(0, 0, 0, 0.12)" }} />
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: `translateY(${frame.iconShift}px) scale(1.08)` }}>
-            <PathNodeSymbol kind="start" size="xl" />
+          <div style={{ ...signlearnoText, color: theme.colors.green, fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
+            LESSON {index + 1}
+          </div>
+          <div style={{ ...signlearnoText, color: theme.colors.textStrong, fontSize: 16, fontWeight: 500, lineHeight: "22px" }}>
+            {unit.subtitle}
           </div>
         </div>
-      </button>
-    );
-  }
-
-  const frame = getNodeFrame(node);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        position: "absolute",
-        left: node.left,
-        top: node.top,
-        width: frame.width,
-        height: frame.height,
-        border: "none",
-        background: "transparent",
-        padding: 0,
-        cursor: "pointer",
-        transition: "transform 140ms ease, filter 140ms ease",
-        transform: active ? "translateY(-6px) scale(1.04)" : "translateY(0)",
-        filter: active ? "saturate(1.02)" : "none",
-        overflow: "visible",
-        zIndex: 2,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: frame.radius,
-          background: "linear-gradient(180deg, #F8F8F8 0%, #ECECEC 100%)",
-          overflow: "visible",
-          boxShadow: active
-            ? `0 ${frame.lift + 3}px 0 ${theme.colors.nodeShadow}, 0 0 0 5px ${theme.colors.focus}, 0 ${frame.lift + 6}px 20px rgba(0,0,0,0.14)`
-            : `0 ${frame.lift}px 0 ${theme.colors.nodeShadow}, 0 ${frame.lift + 4}px 18px rgba(0,0,0,0.08)`,
-        }}
-      >
-        <div style={{ position: "absolute", left: frame.glossInset, right: frame.glossInset, top: 8, height: 16, borderRadius: theme.radius.pill, background: "rgba(255,255,255,0.5)" }} />
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: `translateY(${frame.iconShift}px) scale(1.14)` }}>
-          <PathNodeSymbol kind={node.kind} size="xl" />
-        </div>
-      </div>
-    </button>
+      ))}
+    </div>
   );
 }
 
-export function UnitSection({ unit, activeNodeId, activeGuidebook, onSelectNode, onSelectGuidebook }: { unit: Unit; activeNodeId: string; activeGuidebook: string; onSelectNode: (nodeId: string) => void; onSelectGuidebook: (unitTitle: string) => void }) {
-  const pathCanvasStyle = { position: "relative" as const, width: MAIN_WIDTH };
-  return (
-    <section style={{ width: MAIN_WIDTH }}>
-      <div style={{ position: "relative", width: MAIN_WIDTH, height: 110.59, borderRadius: theme.radius.unit, background: unit.color }}>
-        <div style={{ position: "absolute", left: 16, top: 21.5, fontSize: 22, lineHeight: "34px", fontWeight: 700, color: theme.colors.surface, ...signlearnoText }}>{unit.title}</div>
-        <div style={{ position: "absolute", left: 16, top: 61, fontSize: 17, lineHeight: "27px", fontWeight: 500, color: theme.colors.surface, ...signlearnoText }}>{unit.subtitle}</div>
-        <GuidebookButton color={unit.color} active={activeGuidebook === unit.title} onClick={() => onSelectGuidebook(unit.title)} />
-      </div>
-      <div style={{ ...pathCanvasStyle, height: unit.levelsHeight + PATH_BOTTOM_SPACE }}>
-        <svg
-          width={MAIN_WIDTH}
-          height={unit.levelsHeight + PATH_BOTTOM_SPACE}
-          viewBox={`0 0 ${MAIN_WIDTH} ${unit.levelsHeight + PATH_BOTTOM_SPACE}`}
-          aria-hidden="true"
-          style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible", zIndex: 0 }}
+export function FlashcardView({ unit, onBack, onDone }: { unit: Unit; onBack: () => void; onDone: () => void }) {
+  const cards = unit.flashcards ?? [];
+  const [index, setIndex] = useState(0);
+
+  if (cards.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: 64, color: theme.colors.textMuted, ...signlearnoText }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
+        <div style={{ fontSize: 18, fontWeight: 600 }}>Lesson này chưa có flashcard.</div>
+        <button
+          onClick={onBack}
+          style={{ marginTop: 24, padding: "10px 24px", background: theme.colors.green, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 15, ...signlearnoText }}
         >
-          {unit.nodes.slice(0, -1).map((node, index) => {
-            const nextNode = unit.nodes[index + 1];
-            const path = buildConnectorPath(node, nextNode);
-            return (
-              <g key={`${unit.title}-connector-${index}`}>
-                <path d={path} fill="none" stroke="#E5E5E5" strokeWidth="16" strokeLinecap="round" />
-                <path d={path} fill="none" stroke="rgba(255,255,255,0.88)" strokeWidth="6" strokeLinecap="round" />
-              </g>
-            );
-          })}
-        </svg>
-        {unit.nodes.map((node, index) => {
-          const nodeId = `${unit.title}-${index}`;
-          return <PathNodeButton key={nodeId} node={node} active={activeNodeId === nodeId} onClick={() => onSelectNode(nodeId)} />;
-        })}
+          ← Quay lại
+        </button>
       </div>
-    </section>
+    );
+  }
+
+  const card = cards[index];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Header / Nav */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <button
+          onClick={onBack}
+          style={{ padding: "8px 18px", background: "transparent", border: `2px solid ${theme.colors.border}`, borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 14, color: theme.colors.textStrong, ...signlearnoText, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          ← Back
+        </button>
+        <div style={{ ...signlearnoText, fontWeight: 700, fontSize: 18, color: theme.colors.textStrong }}>{unit.title}</div>
+        <div style={{ marginLeft: "auto", ...signlearnoUpperLabel, color: theme.colors.textMuted }}>{index + 1} / {cards.length}</div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ width: "100%", height: 8, borderRadius: 4, background: theme.colors.border, overflow: "hidden" }}>
+        <div style={{ width: `${((index + 1) / cards.length) * 100}%`, height: 8, borderRadius: 4, background: theme.colors.green, transition: "width 300ms ease" }} />
+      </div>
+
+      {/* Flashcard body */}
+      <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 360 }}>
+        {/* Left: Word */}
+        <div style={{ flex: 1, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, borderBottom: `6px solid ${theme.colors.border}`, background: theme.colors.surface, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
+          <div style={{ ...signlearnoUpperLabel, color: theme.colors.textMuted, marginBottom: 16, letterSpacing: 2 }}>SIGN LANGUAGE</div>
+          <div style={{ ...signlearnoText, fontSize: 56, fontWeight: 900, color: theme.colors.green, lineHeight: 1, marginBottom: 16 }}>
+            {card.word}
+          </div>
+          {card.description && (
+            <div style={{ ...signlearnoText, fontSize: 16, color: theme.colors.textMuted, lineHeight: "24px" }}>
+              {card.description}
+            </div>
+          )}
+        </div>
+
+        {/* Right: Video */}
+        <div style={{ flex: 1, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 280, border: `2px solid ${theme.colors.border}` }}>
+          <iframe
+            key={card.videoUrl}
+            src={`${card.videoUrl}?autoplay=1&mute=1&rel=0&modestbranding=1`}
+            title={`Sign for ${card.word}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ width: "100%", height: "100%", border: "none", display: "block", minHeight: 340 }}
+          />
+        </div>
+      </div>
+
+      {/* Prev / Next buttons */}
+      <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setIndex(Math.max(0, index - 1))}
+          disabled={index === 0}
+          style={{ padding: "12px 28px", borderRadius: 10, border: `2px solid ${theme.colors.border}`, background: theme.colors.surface, cursor: index === 0 ? "not-allowed" : "pointer", fontWeight: 700, fontSize: 15, color: index === 0 ? theme.colors.textMuted : theme.colors.textStrong, ...signlearnoText, opacity: index === 0 ? 0.5 : 1, transition: "opacity 140ms" }}
+        >
+          ← Prev
+        </button>
+        {index === cards.length - 1 ? (
+          <button
+            onClick={onDone}
+            style={{ padding: "12px 28px", borderRadius: 10, border: "none", borderBottom: `4px solid ${theme.colors.greenDark}`, background: theme.colors.green, cursor: "pointer", fontWeight: 700, fontSize: 15, color: "#fff", ...signlearnoText }}
+          >
+            ✓ Done
+          </button>
+        ) : (
+          <button
+            onClick={() => setIndex(index + 1)}
+            style={{ padding: "12px 28px", borderRadius: 10, border: "none", borderBottom: `4px solid ${theme.colors.greenDark}`, background: theme.colors.green, cursor: "pointer", fontWeight: 700, fontSize: 15, color: "#fff", ...signlearnoText }}
+          >
+            Next →
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

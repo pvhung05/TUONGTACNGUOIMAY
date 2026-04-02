@@ -5,6 +5,12 @@ import type {
 
 export type NavItem = { label: string; kind: SignLearnoNavKind };
 
+export type Flashcard = {
+  word: string;
+  description?: string;
+  videoUrl: string; // YouTube embed URL e.g. https://www.youtube.com/embed/VIDEO_ID
+};
+
 export type PathNode = {
   left: number;
   top: number;
@@ -19,6 +25,7 @@ export type Unit = {
   color: string;
   levelsHeight: number;
   nodes: PathNode[];
+  flashcards?: Flashcard[];
 };
 
 export type NodeFrame = {

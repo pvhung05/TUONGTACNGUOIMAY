@@ -80,6 +80,31 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* signlearno dark tokens */
+    --signlearno-surface: #1f1f1f;
+    --signlearno-canvas: #111111;
+    --signlearno-border: #2e2e2e;
+    --signlearno-text-strong: #e8e8e8;
+    --signlearno-text-muted: #9a9a9a;
+    --signlearno-text-soft: #5a5a5a;
+    --signlearno-blue: #1cb0f6;
+    --signlearno-blue-soft: #0e2e3d;
+    --signlearno-blue-border: #1a5a7a;
+    --signlearno-green: #58cc02;
+    --signlearno-green-dark: #3e9100;
+    --signlearno-green-soft: #1a2e0a;
+    --signlearno-yellow: #ffc800;
+    --signlearno-yellow-soft: #2e2400;
+    --signlearno-orange: #ff9600;
+    --signlearno-red: #ff4b4b;
+    --signlearno-purple: #b779ff;
+    --signlearno-purple-soft: #1e1030;
+    --signlearno-node: #2e2e2e;
+    --signlearno-node-shadow: #0a0a0a;
+    --signlearno-node-icon: #5a5a5a;
+    --signlearno-grid: #2a2a2a;
+    --signlearno-chart-fill: rgba(255, 200, 0, 0.08);
+    --signlearno-focus: rgba(28, 176, 246, 0.22);
   }
 }
 

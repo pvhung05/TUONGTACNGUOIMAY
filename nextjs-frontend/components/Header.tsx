@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
-import { Flame, Gem, Menu, X } from "lucide-react";
+import { Flame, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navigation = [
   { name: "Home", href: "/", icon: "home" },
-  { name: "Learn", href: "/learn", icon: "learn" },
   { name: "Translator", href: "/translator", icon: "translator" },
+  { name: "Learn", href: "/learn", icon: "learn" },
+  { name: "Leaderboard", href: "/leaderboard", icon: "leaderboard" },
+  { name: "Dictionary", href: "/dictionary", icon: "dictionary" },
   { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
 ];
 
@@ -93,59 +96,59 @@ export function Header() {
           })}
         </nav>
 
-        {/* Stats */}
+        {/* Stats + Auth */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 24,
+            gap: 16,
           }}
           className="hidden md:flex"
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Flame size={20} color={theme.colors.orange} fill={theme.colors.orange} />
+            <span style={{ color: theme.colors.orange, fontSize: 16, fontWeight: 700, ...signlearnoText }}>1</span>
+          </div>
+
+
+          <div style={{ width: 1, height: 24, background: theme.colors.border }} />
+
+          <ThemeToggle />
+
+          <Link href="/login">
             <div
               style={{
-                display: "flex",
-                width: 24,
-                justifyContent: "center",
-              }}
-            >
-              <Flame size={20} color={theme.colors.orange} fill={theme.colors.orange} />
-            </div>
-            <span
-              style={{
-                color: theme.colors.orange,
-                fontSize: 16,
-                lineHeight: "20px",
+                padding: "8px 16px",
+                borderRadius: 10,
+                border: `2px solid ${theme.colors.border}`,
+                fontSize: 14,
                 fontWeight: 700,
+                color: theme.colors.textStrong,
+                cursor: "pointer",
                 ...signlearnoText,
               }}
             >
-              1
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              Log in
+            </div>
+          </Link>
+          <Link href="/register">
             <div
               style={{
-                display: "flex",
-                width: 24,
-                justifyContent: "center",
-              }}
-            >
-              <Gem size={20} color={theme.colors.border} fill={theme.colors.border} />
-            </div>
-            <span
-              style={{
-                color: theme.colors.border,
-                fontSize: 16,
-                lineHeight: "20px",
+                padding: "8px 18px",
+                borderRadius: 10,
+                border: "none",
+                borderBottom: `3px solid ${theme.colors.greenDark}`,
+                background: theme.colors.green,
+                fontSize: 14,
                 fontWeight: 700,
+                color: "#fff",
+                cursor: "pointer",
                 ...signlearnoText,
               }}
             >
-              0
-            </span>
-          </div>
+              Sign up
+            </div>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}

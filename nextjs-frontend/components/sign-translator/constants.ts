@@ -19,6 +19,14 @@ export const units: Unit[] = [
       { left: 260, top: 718, kind: "lesson" },
       { left: 260, top: 866, kind: "review" },
     ],
+    flashcards: [
+      { word: "Hello", description: "A common greeting", videoUrl: "https://www.youtube.com/embed/aNvQjBYbA_Y" },
+      { word: "Thank you", description: "Expressing gratitude", videoUrl: "https://www.youtube.com/embed/Dj3vaOo8ULI" },
+      { word: "Please", description: "Polite request", videoUrl: "https://www.youtube.com/embed/1B3lOQMCzaE" },
+      { word: "Sorry", description: "Apologizing", videoUrl: "https://www.youtube.com/embed/L2DYI0MFXBE" },
+      { word: "Yes", description: "Affirmation", videoUrl: "https://www.youtube.com/embed/3-XyFBkz4rY" },
+      { word: "No", description: "Negation", videoUrl: "https://www.youtube.com/embed/3-XyFBkz4rY" },
+    ],
   },
   {
     title: "Unit 2",
@@ -36,6 +44,13 @@ export const units: Unit[] = [
       { left: 266, top: 1222, kind: "check" },
       { left: 300, top: 1388, kind: "review" },
     ],
+    flashcards: [
+      { word: "Where", description: "Asking location", videoUrl: "https://www.youtube.com/embed/lFRPODEnAyU" },
+      { word: "Left", description: "Direction left", videoUrl: "https://www.youtube.com/embed/QmaVPMcB1fk" },
+      { word: "Right", description: "Direction right", videoUrl: "https://www.youtube.com/embed/QmaVPMcB1fk" },
+      { word: "Street", description: "A road in a city", videoUrl: "https://www.youtube.com/embed/QmaVPMcB1fk" },
+      { word: "Help", description: "Asking for assistance", videoUrl: "https://www.youtube.com/embed/y5XB5rNXj3A" },
+    ],
   },
   {
     title: "Unit 3",
@@ -51,6 +66,13 @@ export const units: Unit[] = [
       { left: 314, top: 886, kind: "story" },
       { left: 286, top: 1054, kind: "lesson" },
       { left: 256, top: 1222, kind: "review" },
+    ],
+    flashcards: [
+      { word: "Eat", description: "The action of eating", videoUrl: "https://www.youtube.com/embed/e2f0HVNrZ0g" },
+      { word: "Drink", description: "The action of drinking", videoUrl: "https://www.youtube.com/embed/e2f0HVNrZ0g" },
+      { word: "Water", description: "A liquid", videoUrl: "https://www.youtube.com/embed/bFPiXPk2NKo" },
+      { word: "More", description: "Requesting additional", videoUrl: "https://www.youtube.com/embed/e2f0HVNrZ0g" },
+      { word: "Finished", description: "Indicating completion", videoUrl: "https://www.youtube.com/embed/e2f0HVNrZ0g" },
     ],
   },
 ];
