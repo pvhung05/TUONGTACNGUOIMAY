@@ -1,27 +1,67 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Trophy, Medal, Crown } from "lucide-react";
-
-const mockUsers = [
-  { rank: 1, name: "Alex M.", xp: 3240, streak: 42, avatar: "🧑‍💻" },
-  { rank: 2, name: "Sarah K.", xp: 2980, streak: 31, avatar: "👩‍🎨" },
-  { rank: 3, name: "James T.", xp: 2750, streak: 28, avatar: "👨‍🏫" },
-  { rank: 4, name: "Lin W.", xp: 2410, streak: 19, avatar: "🧑" },
-  { rank: 5, name: "Maria G.", xp: 2200, streak: 15, avatar: "👩" },
-  { rank: 6, name: "Tom H.", xp: 1980, streak: 12, avatar: "🧑‍🦱" },
-  { rank: 7, name: "Priya S.", xp: 1750, streak: 9, avatar: "👩‍🦰" },
-  { rank: 8, name: "David R.", xp: 1530, streak: 7, avatar: "👨‍🦳" },
-  { rank: 9, name: "Emma L.", xp: 1320, streak: 5, avatar: "👩‍🦱" },
-  { rank: 10, name: "You", xp: 390, streak: 1, avatar: "⭐", isMe: true },
-];
+import { getLeaderboardTop10, getMyRank } from "@/lib/api";
+import type { LeaderboardUser } from "@/lib/api/backend";
 
 const rankColors = [theme.colors.yellow, "#C0C0C0", "#CD7F32"];
 const rankIcons = [Crown, Medal, Trophy];
 
 export default function LeaderboardPage() {
+  type RankedUser = {
+    rank: number;
+    name: string;
+    xp: number;
+    streak: number;
+    isMe: boolean;
+  };
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [myRank, setMyRank] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const top10 = await getLeaderboardTop10();
+        setUsers(top10);
+        try {
+          const rank = await getMyRank();
+          setMyRank(rank.rank);
+        } catch {
+          setMyRank(null);
+        }
+      } catch (nextError) {
+        setError(nextError instanceof Error ? nextError.message : "Failed to load leaderboard.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
+  }, []);
+
+  const rankedUsers = useMemo<RankedUser[]>(
+    () =>
+      users.map((user, index) => ({
+        rank: index + 1,
+        name: user.username,
+        xp: user.score,
+        streak: user.streak,
+        isMe: myRank !== null && myRank === index + 1,
+      })),
+    [myRank, users],
+  );
+
+  const podium: RankedUser[] = [
+    rankedUsers[1],
+    rankedUsers[0],
+    rankedUsers[2],
+  ].filter((item): item is RankedUser => Boolean(item));
+
   return (
     <>
       <Header />
@@ -37,17 +77,19 @@ export default function LeaderboardPage() {
               Top learners this week — keep your streak alive!
             </p>
           </div>
+          {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading leaderboard...</p> : null}
+          {error ? <p style={{ ...signlearnoText, color: theme.colors.red }}>{error}</p> : null}
 
           {/* Top 3 podium */}
           <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 40, alignItems: "flex-end" }}>
-            {[mockUsers[1], mockUsers[0], mockUsers[2]].map((user, i) => {
+            {podium.map((user, i) => {
               const podiumOrder = [1, 0, 2]; // left=2nd, center=1st, right=3rd
               const height = [120, 148, 100][i];
               const color = rankColors[podiumOrder[i]];
               const Icon = rankIcons[podiumOrder[i]];
               return (
                 <div key={user.rank} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                  <div style={{ fontSize: 32 }}>{user.avatar}</div>
+                  <div style={{ fontSize: 32 }}>👤</div>
                   <div style={{ ...signlearnoText, fontWeight: 700, fontSize: 14, color: theme.colors.textStrong }}>{user.name}</div>
                   <div style={{ ...signlearnoText, fontSize: 13, color: theme.colors.textMuted }}>{user.xp.toLocaleString()} XP</div>
                   <div
@@ -72,7 +114,7 @@ export default function LeaderboardPage() {
 
           {/* Full list */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {mockUsers.map((user) => {
+            {rankedUsers.map((user) => {
               const isTop3 = user.rank <= 3;
               return (
                 <div
@@ -83,9 +125,9 @@ export default function LeaderboardPage() {
                     gap: 16,
                     padding: "14px 20px",
                     borderRadius: theme.radius.card,
-                    background: (user as any).isMe ? theme.colors.greenSoft : theme.colors.surface,
-                    border: `2px solid ${(user as any).isMe ? theme.colors.green : theme.colors.border}`,
-                    borderBottom: `4px solid ${(user as any).isMe ? theme.colors.greenDark : theme.colors.border}`,
+                    background: user.isMe ? theme.colors.greenSoft : theme.colors.surface,
+                    border: `2px solid ${user.isMe ? theme.colors.green : theme.colors.border}`,
+                    borderBottom: `4px solid ${user.isMe ? theme.colors.greenDark : theme.colors.border}`,
                   }}
                 >
                   {/* Rank */}
@@ -93,11 +135,11 @@ export default function LeaderboardPage() {
                     {user.rank}
                   </div>
                   {/* Avatar */}
-                  <div style={{ fontSize: 26 }}>{user.avatar}</div>
+                  <div style={{ fontSize: 26 }}>👤</div>
                   {/* Name */}
                   <div style={{ flex: 1, ...signlearnoText, fontWeight: 700, fontSize: 16, color: theme.colors.textStrong }}>
                     {user.name}
-                    {(user as any).isMe && (
+                    {user.isMe && (
                       <span style={{ marginLeft: 8, ...signlearnoUpperLabel, color: theme.colors.green, background: theme.colors.greenSoft, padding: "2px 8px", borderRadius: 20 }}>YOU</span>
                     )}
                   </div>
@@ -112,6 +154,9 @@ export default function LeaderboardPage() {
                 </div>
               );
             })}
+            {!loading && rankedUsers.length === 0 ? (
+              <div style={{ ...signlearnoText, color: theme.colors.textMuted }}>No leaderboard data available.</div>
+            ) : null}
           </div>
         </div>
       </main>

@@ -23,6 +23,54 @@ const lessonSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    resources: [
+      {
+        title: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        url: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+      },
+    ],
+    practiceQuestions: [
+      {
+        url: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        A: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        B: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        C: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        D: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        correct: {
+          type: String,
+          enum: ['A', 'B', 'C', 'D'],
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

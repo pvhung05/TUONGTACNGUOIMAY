@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ChatbotBubble } from "@/components/ChatbotBubble";
@@ -17,10 +17,14 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "SignLearn - Learn Sign Language with AI",
   description: "A comprehensive platform to learn sign language with real-time gesture translation, AI-powered lessons, and interactive practice tools.",
-  viewport: "width=device-width, initial-scale=1",
   icons: {
     icon: "/favicon.ico",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

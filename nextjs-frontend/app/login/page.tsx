@@ -1,9 +1,34 @@
 "use client";
 
+import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
+import { loginUser, setStoredToken } from "@/lib/api";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const result = await loginUser({ email, password });
+      setStoredToken(result.token);
+      router.push("/dashboard");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main
       style={{
@@ -121,13 +146,15 @@ export default function LoginPage() {
             <div style={{ flex: 1, height: 1, background: theme.colors.border }} />
           </div>
 
-          {/* Email input */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <form style={{ display: "flex", flexDirection: "column", gap: 12 }} onSubmit={handleSubmit}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label style={{ ...signlearnoUpperLabel, color: theme.colors.textMuted }}>EMAIL</label>
               <input
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 style={{
                   width: "100%",
                   padding: "13px 16px",
@@ -150,6 +177,9 @@ export default function LoginPage() {
               <input
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 style={{
                   width: "100%",
                   padding: "13px 16px",
@@ -169,7 +199,8 @@ export default function LoginPage() {
 
             {/* Login button */}
             <button
-              type="button"
+              type="submit"
+              disabled={loading}
               style={{
                 width: "100%",
                 padding: "14px 20px",
@@ -177,7 +208,7 @@ export default function LoginPage() {
                 border: "none",
                 borderBottom: `4px solid ${theme.colors.greenDark}`,
                 background: theme.colors.green,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 fontSize: 16,
                 fontWeight: 800,
                 color: "#fff",
@@ -194,9 +225,14 @@ export default function LoginPage() {
                 e.currentTarget.style.borderBottomWidth = "4px";
               }}
             >
-              Log in
+              {loading ? "Logging in..." : "Log in"}
             </button>
-          </div>
+            {error ? (
+              <div style={{ ...signlearnoText, color: theme.colors.red, fontSize: 14, lineHeight: "20px" }}>
+                {error}
+              </div>
+            ) : null}
+          </form>
 
           {/* Forgot password */}
           <div style={{ textAlign: "center", marginTop: 16 }}>

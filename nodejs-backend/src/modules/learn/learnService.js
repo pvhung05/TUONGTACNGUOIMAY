@@ -5,11 +5,27 @@ const { calculateStreak } = require('../../utils/streak');
 const logger = require('../../logger');
 
 class LearnService {
+  mapLessonForResponse(lessonDoc) {
+    const lesson = lessonDoc.toObject();
+    const resources = Array.isArray(lesson.resources) ? lesson.resources : [];
+
+    return {
+      ...lesson,
+      resources,
+      // Keep old frontend UI working without any UI changes.
+      content:
+        lesson.content ||
+        resources
+          .map((item, index) => `${index + 1}. ${item.title}: ${item.url}`)
+          .join('\n'),
+    };
+  }
+
   async getAllLessons(type = null) {
     try {
       const query = type ? { type } : {};
       const lessons = await Lesson.find(query).sort({ order: 1, createdAt: 1 });
-      return lessons;
+      return lessons.map((lesson) => this.mapLessonForResponse(lesson));
     } catch (error) {
       logger.error('Get lessons error:', error.message);
       throw error;
@@ -22,7 +38,7 @@ class LearnService {
       if (!lesson) {
         throw new Error('Lesson not found');
       }
-      return lesson;
+      return this.mapLessonForResponse(lesson);
     } catch (error) {
       logger.error('Get lesson error:', error.message);
       throw error;

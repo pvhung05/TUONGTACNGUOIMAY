@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
-import { Flame, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Flame, LogOut, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { clearStoredToken, getProfile, getStoredToken } from "@/lib/api";
 
 const navigation = [
   { name: "Home", href: "/", icon: "home" },
@@ -17,12 +18,39 @@ const navigation = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [translatorDropdownOpen, setTranslatorDropdownOpen] = useState(false);
   const [mobileTranslatorOpen, setMobileTranslatorOpen] = useState(false);
   const [learnDropdownOpen, setLearnDropdownOpen] = useState(false);
   const [mobileLearnOpen, setMobileLearnOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const token = getStoredToken();
+      if (!token) {
+        setUsername(null);
+        return;
+      }
+      try {
+        const profile = await getProfile();
+        setUsername(profile.username);
+      } catch {
+        clearStoredToken();
+        setUsername(null);
+      }
+    };
+    void loadProfile();
+  }, [pathname]);
+
+  const handleLogout = () => {
+    clearStoredToken();
+    setUsername(null);
+    setMobileMenuOpen(false);
+    router.push("/login");
+  };
 
   return (
     <header
@@ -273,40 +301,80 @@ export function Header() {
 
           <ThemeToggle />
 
-          <Link href="/login">
-            <div
-              style={{
-                padding: "8px 16px",
-                borderRadius: 10,
-                border: `2px solid ${theme.colors.border}`,
-                fontSize: 14,
-                fontWeight: 700,
-                color: theme.colors.textStrong,
-                cursor: "pointer",
-                ...signlearnoText,
-              }}
-            >
-              Log in
-            </div>
-          </Link>
-          <Link href="/register">
-            <div
-              style={{
-                padding: "8px 18px",
-                borderRadius: 10,
-                border: "none",
-                borderBottom: `3px solid ${theme.colors.greenDark}`,
-                background: theme.colors.green,
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#fff",
-                cursor: "pointer",
-                ...signlearnoText,
-              }}
-            >
-              Sign up
-            </div>
-          </Link>
+          {username ? (
+            <>
+              <div
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 10,
+                  border: `2px solid ${theme.colors.border}`,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: theme.colors.textStrong,
+                  ...signlearnoText,
+                }}
+              >
+                {username}
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  border: `2px solid ${theme.colors.border}`,
+                  background: theme.colors.surface,
+                  color: theme.colors.textStrong,
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  ...signlearnoText,
+                }}
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <div
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: 10,
+                    border: `2px solid ${theme.colors.border}`,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: theme.colors.textStrong,
+                    cursor: "pointer",
+                    ...signlearnoText,
+                  }}
+                >
+                  Log in
+                </div>
+              </Link>
+              <Link href="/register">
+                <div
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 10,
+                    border: "none",
+                    borderBottom: `3px solid ${theme.colors.greenDark}`,
+                    background: theme.colors.green,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#fff",
+                    cursor: "pointer",
+                    ...signlearnoText,
+                  }}
+                >
+                  Sign up
+                </div>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -488,6 +556,64 @@ export function Header() {
               </Link>
             );
           })}
+          {username ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                marginTop: 8,
+                padding: "12px 16px",
+                borderRadius: 12,
+                border: `2px solid ${theme.colors.border}`,
+                background: theme.colors.surface,
+                color: theme.colors.textStrong,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: "pointer",
+                textAlign: "left",
+                ...signlearnoText,
+              }}
+            >
+              {username} - Logout
+            </button>
+          ) : (
+            <>
+              <Link href="/login">
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: `2px solid ${theme.colors.border}`,
+                    color: theme.colors.textStrong,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    ...signlearnoText,
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Log in
+                </div>
+              </Link>
+              <Link href="/register">
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: "none",
+                    borderBottom: `3px solid ${theme.colors.greenDark}`,
+                    background: theme.colors.green,
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    ...signlearnoText,
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign up
+                </div>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </header>

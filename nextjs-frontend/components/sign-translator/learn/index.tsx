@@ -16,8 +16,8 @@ export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit:
             aspectRatio: "1 / 1",
             borderRadius: theme.radius.unit,
             background: theme.colors.surface,
-            border: `2px solid ${theme.colors.border}`,
-            borderBottom: `6px solid ${theme.colors.border}`,
+            border: `2px solid ${unit.completed ? theme.colors.orange : theme.colors.border}`,
+            borderBottom: `6px solid ${unit.completed ? theme.colors.orange : theme.colors.border}`,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -30,7 +30,7 @@ export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit:
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(2px)";
             e.currentTarget.style.borderBottomWidth = "4px";
-            e.currentTarget.style.borderColor = theme.colors.green;
+            e.currentTarget.style.borderColor = unit.completed ? theme.colors.orange : theme.colors.green;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
@@ -39,11 +39,14 @@ export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit:
           }}
         >
           <div style={{ ...signlearnoText, color: theme.colors.green, fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-            LESSON {index + 1}
+            {unit.label || `LESSON ${index + 1}`}
           </div>
           <div style={{ ...signlearnoText, color: theme.colors.textStrong, fontSize: 16, fontWeight: 500, lineHeight: "22px" }}>
             {unit.subtitle}
           </div>
+          {unit.completed ? (
+            <div style={{ marginTop: 10, ...signlearnoUpperLabel, color: theme.colors.orange }}>COMPLETED</div>
+          ) : null}
         </div>
       ))}
     </div>
