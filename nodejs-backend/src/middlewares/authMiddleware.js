@@ -22,6 +22,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     req.userId = decoded.id;
+    req.userRole = decoded.role;
     next();
   } catch (error) {
     logger.error('Auth middleware error:', error.message);
@@ -32,4 +33,16 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+const adminMiddleware = (req, res, next) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin access required',
+    });
+  }
+
+  next();
+};
+
 module.exports = authMiddleware;
+module.exports.adminMiddleware = adminMiddleware;

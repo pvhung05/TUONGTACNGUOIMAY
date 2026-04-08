@@ -109,15 +109,34 @@ export function FlashcardView({ unit, onBack, onDone }: { unit: Unit; onBack: ()
         </div>
 
         {/* Right: Video */}
-        <div style={{ flex: 1, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 280, border: `2px solid ${theme.colors.border}` }}>
-          <iframe
+        <div
+          style={{
+            flex: 1,
+            borderRadius: theme.radius.card,
+            overflow: "hidden",
+            background: "#000",
+            minHeight: 280,
+            border: `2px solid ${theme.colors.border}`,
+            position: "relative" // 👈 thêm
+          }}
+        >
+          <video
             key={card.videoUrl}
-            src={`${card.videoUrl}?autoplay=1&mute=1&rel=0&modestbranding=1`}
-            title={`Sign for ${card.word}`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ width: "100%", height: "100%", border: "none", display: "block", minHeight: 340 }}
-          />
+            autoPlay
+            muted
+            loop
+            controls
+            style={{
+              position: "absolute", // 👈 QUAN TRỌNG
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover" // 👈 fill full khung
+            }}
+          >
+            <source src={card.videoUrl} type="video/mp4" />
+          </video>
         </div>
       </div>
 

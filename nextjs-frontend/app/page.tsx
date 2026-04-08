@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Header, Footer } from "@/components/shared";
+import { Footer } from "@/components/shared";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 
 export default function LandingPage() {
   return (
     <>
-      <Header />
       <main style={{ minHeight: "100vh", paddingTop: "70px" }}>
         {/* Hero Section */}
         <section

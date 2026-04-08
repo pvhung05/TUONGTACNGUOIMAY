@@ -1,195 +1,124 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { Header } from "@/components/Header";
+import Link from "next/link";
 import { Footer } from "@/components/Footer";
-import { Search } from "lucide-react";
-import { addTranslatorWord, getTranslatorWords, searchTranslatorWords } from "@/lib/api";
-import type { TranslatorWord } from "@/lib/api/backend";
+import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
+
+const duolingo = {
+  green: "#58CC02",
+  greenDark: "#46A302",
+  yellow: "#FFC800",
+  blue: "#1CB0F6",
+  ink: "#36454F",
+  softInk: "#6F7E88",
+  line: "#E7E7E7",
+  surface: "#FFFFFF",
+  blush: "#FFF9DE",
+  mint: "#E9F8DD",
+};
 
 export default function DictionaryPage() {
-  const [search, setSearch] = useState("");
-  const [words, setWords] = useState<TranslatorWord[]>([]);
-  const [selected, setSelected] = useState<TranslatorWord | null>(null);
-  const [newText, setNewText] = useState("");
-  const [newVideoUrl, setNewVideoUrl] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-
-  const loadWords = async (searchText?: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = searchText ? await searchTranslatorWords(searchText) : (await getTranslatorWords()).words;
-      setWords(data);
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Failed to load dictionary.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadWords();
-  }, []);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      void loadWords(search.trim() ? search : undefined);
-    }, 350);
-    return () => window.clearTimeout(id);
-  }, [search]);
-
-  const filtered = useMemo(() => words, [words]);
-
-  const handleAddWord = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAddError(null);
-    setAdding(true);
-    try {
-      await addTranslatorWord({ text: newText, videoUrl: newVideoUrl });
-      setNewText("");
-      setNewVideoUrl("");
-      await loadWords();
-    } catch (nextError) {
-      setAddError(nextError instanceof Error ? nextError.message : "Failed to add word.");
-    } finally {
-      setAdding(false);
-    }
-  };
+  const cards = [
+    {
+      title: "Sign Alphabet",
+      description: "Browse sign language letters and numbers, then open related videos for the symbol you choose.",
+      href: "/dictionary/sign-alphabet",
+      accent: duolingo.green,
+      badge: "ALPHABET",
+      emoji: "A",
+    },
+    {
+      title: "Word Search",
+      description: "Type a word or phrase and discover related sign videos like a playful dictionary.",
+      href: "/dictionary/word-search",
+      accent: duolingo.blue,
+      badge: "WORDS",
+      emoji: "W",
+    },
+  ];
 
   return (
     <>
-      <Header />
-      <main style={{ minHeight: "100vh", paddingTop: 90, background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 80px" }}>
-          {/* Hero */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>📖</div>
-            <h1 style={{ ...signlearnoText, fontSize: 32, fontWeight: 900, color: theme.colors.textStrong, margin: 0 }}>
-              Sign Language Dictionary
-            </h1>
-            <p style={{ ...signlearnoText, fontSize: 16, color: theme.colors.textMuted, marginTop: 8 }}>
-              Browse and learn signs for common words.
+      <main
+        style={{
+          minHeight: "100vh",
+          paddingTop: 88,
+          background: "linear-gradient(180deg, #f7fff0 0%, #ffffff 45%, #fffdf4 100%)",
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+          <section
+            className="rounded-3xl border-2 p-6 sm:p-8"
+            style={{
+              background: `linear-gradient(145deg, ${duolingo.surface} 0%, ${duolingo.blush} 100%)`,
+              borderColor: duolingo.line,
+              boxShadow: "0 12px 0 rgba(0,0,0,0.08)",
+            }}
+          >
+            <p className="text-xs font-extrabold uppercase tracking-[0.24em]" style={{ color: duolingo.blue }}>
+              Sign Dictionary
             </p>
-          </div>
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl" style={{ color: duolingo.ink }}>
+              Choose how you want to learn
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm sm:text-base" style={{ color: duolingo.softInk }}>
+              Pick a sign alphabet or search by word. Each path opens a dedicated page with related sign videos.
+            </p>
+          </section>
 
-          {/* Search */}
-          <div style={{ position: "relative", maxWidth: 480, margin: "0 auto 24px" }}>
-            <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: theme.colors.textMuted }} />
-            <input
-              type="text"
-              placeholder="Search a word..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "12px 16px 12px 42px",
-                borderRadius: 12,
-                border: `2px solid ${theme.colors.border}`,
-                fontSize: 15,
-                fontFamily: theme.fontFamily,
-                color: theme.colors.textStrong,
-                background: theme.colors.surface,
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = theme.colors.green)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = theme.colors.border)}
-            />
-          </div>
-
-          <form onSubmit={handleAddWord} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, marginBottom: 24 }}>
-            <input
-              placeholder="New word text"
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
-              required
-              style={{ padding: "12px", borderRadius: 12, border: `2px solid ${theme.colors.border}` }}
-            />
-            <input
-              placeholder="Video URL"
-              value={newVideoUrl}
-              onChange={(e) => setNewVideoUrl(e.target.value)}
-              required
-              style={{ padding: "12px", borderRadius: 12, border: `2px solid ${theme.colors.border}` }}
-            />
-            <button type="submit" disabled={adding} style={{ padding: "12px 16px", borderRadius: 12, border: "none", background: theme.colors.green, color: "#fff", fontWeight: 700 }}>
-              {adding ? "Adding..." : "Add"}
-            </button>
-          </form>
-          {addError ? <div style={{ ...signlearnoText, color: theme.colors.red, marginBottom: 16 }}>{addError}</div> : null}
-          {error ? <div style={{ ...signlearnoText, color: theme.colors.red, marginBottom: 16 }}>{error}</div> : null}
-
-          {/* Two-col layout: grid + detail */}
-          <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-            {/* Word grid */}
-            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 16 }}>
-              {filtered.map((word) => {
-                const color = theme.colors.green;
-                const isSelected = selected?._id === word._id;
-                return (
+          <section className="mt-6 grid gap-5 lg:grid-cols-2">
+            {cards.map((card) => (
+              <Link key={card.href} href={card.href} style={{ textDecoration: "none" }}>
+                <div
+                  className="h-full rounded-3xl border-2 p-6 transition"
+                  style={{
+                    background: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                    boxShadow: "0 10px 0 rgba(0,0,0,0.06)",
+                  }}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.borderColor = card.accent;
+                    event.currentTarget.style.transform = "translateY(-3px)";
+                    event.currentTarget.style.boxShadow = `0 14px 0 ${card.accent}22`;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.borderColor = theme.colors.border;
+                    event.currentTarget.style.transform = "translateY(0)";
+                    event.currentTarget.style.boxShadow = "0 10px 0 rgba(0,0,0,0.06)";
+                  }}
+                >
                   <div
-                    key={word._id}
-                    onClick={() => setSelected(word)}
-                    style={{
-                      padding: "20px 16px",
-                      borderRadius: theme.radius.card,
-                      border: `2px solid ${isSelected ? color : theme.colors.border}`,
-                      borderBottom: `4px solid ${isSelected ? color : theme.colors.border}`,
-                      background: isSelected ? `${color}14` : theme.colors.surface,
-                      cursor: "pointer",
-                      textAlign: "center",
-                      transition: "all 140ms",
-                    }}
-                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.borderColor = color; }}
-                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.borderColor = theme.colors.border; }}
+                    className="inline-flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black"
+                    style={{ background: `${card.accent}18`, color: card.accent }}
                   >
-                    <div style={{ ...signlearnoText, fontSize: 18, fontWeight: 800, color: isSelected ? color : theme.colors.textStrong, marginBottom: 6 }}>
-                      {word.text}
-                    </div>
-                    <div style={{ ...signlearnoUpperLabel, color: "#fff", background: color, borderRadius: 20, padding: "2px 8px", display: "inline-block", fontSize: 11 }}>
-                      WORD
-                    </div>
+                    {card.emoji}
                   </div>
-                );
-              })}
-              {loading ? <div style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading words...</div> : null}
-              {filtered.length === 0 && (
-                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 48, color: theme.colors.textMuted, ...signlearnoText }}>
-                  No words found.
-                </div>
-              )}
-            </div>
 
-            {/* Detail panel */}
-            {selected && (
-              <div style={{ width: 360, flexShrink: 0, position: "sticky", top: 100, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, background: theme.colors.surface, overflow: "hidden" }}>
-                <div style={{ background: theme.colors.green, padding: "20px 24px" }}>
-                  <div style={{ ...signlearnoText, fontSize: 28, fontWeight: 900, color: "#fff" }}>{selected.text}</div>
-                  <div style={{ ...signlearnoUpperLabel, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>Dictionary Word</div>
-                </div>
-                <div style={{ padding: 20 }}>
-                  <p style={{ ...signlearnoText, fontSize: 15, color: theme.colors.textMuted, lineHeight: "24px", marginBottom: 16 }}>
-                    Preview video from translator API.
+                  <div className="mt-5 inline-flex rounded-full px-3 py-1 text-xs font-black" style={{ background: duolingo.mint, color: duolingo.greenDark }}>
+                    {card.badge}
+                  </div>
+
+                  <h2 className="mt-4 text-2xl font-black" style={{ color: duolingo.ink }}>
+                    {card.title}
+                  </h2>
+                  <p className="mt-3 text-sm leading-6" style={{ color: duolingo.softInk }}>
+                    {card.description}
                   </p>
-                  <div style={{ borderRadius: 10, overflow: "hidden", background: "#000" }}>
-                    <iframe
-                      key={selected.videoUrl}
-                      src={`${selected.videoUrl}${selected.videoUrl.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0`}
-                      title={`Sign for ${selected.text}`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                      allowFullScreen
-                      style={{ width: "100%", height: 200, border: "none", display: "block" }}
-                    />
+
+                  <div
+                    className="mt-6 inline-flex items-center rounded-2xl px-4 py-3 text-sm font-extrabold"
+                    style={{
+                      background: card.accent,
+                      color: "#fff",
+                      borderBottom: `4px solid ${card.accent === duolingo.green ? duolingo.greenDark : "#0f86bf"}`,
+                    }}
+                  >
+                    Open {card.title}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              </Link>
+            ))}
+          </section>
         </div>
       </main>
       <Footer />

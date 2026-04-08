@@ -17,6 +17,15 @@ const seedData = async () => {
     await User.deleteMany({});
     await Lesson.deleteMany({});
     await Translator.deleteMany({});
+
+    // Cleanup legacy index from old translator schema (text unique) to prevent duplicate null errors.
+    try {
+      await Translator.collection.dropIndex('text_1');
+      logger.info('Dropped legacy translators index: text_1');
+    } catch (indexError) {
+      // Ignore if index does not exist.
+    }
+
     logger.info('Cleared existing data');
 
     // Seed sample users
@@ -25,6 +34,7 @@ const seedData = async () => {
         username: 'john_doe',
         email: 'john@example.com',
         password: '123456',
+        role: 'user',
         score: 150,
         streak: 5,
       },
@@ -32,6 +42,7 @@ const seedData = async () => {
         username: 'jane_smith',
         email: 'jane@example.com',
         password: '123456',
+        role: 'user',
         score: 200,
         streak: 8,
       },
@@ -39,6 +50,7 @@ const seedData = async () => {
         username: 'bob_wilson',
         email: 'bob@example.com',
         password: '123456',
+        role: 'user',
         score: 100,
         streak: 3,
       },
@@ -46,6 +58,7 @@ const seedData = async () => {
         username: 'alice_johnson',
         email: 'alice@example.com',
         password: '123456',
+        role: 'admin',
         score: 250,
         streak: 12,
       },
@@ -160,54 +173,79 @@ const seedData = async () => {
     logger.info(`Created ${lessons.length} sample lessons`);
 
     // Seed sample translator words
-    const words = await Translator.create([
+    const translatorWords = [
       {
-        text: 'hello',
-        videoUrl: 'https://example.com/hello.mp4',
+        title: 'hello',
+        videos: [
+          { title: 'Hello - main video', url: 'https://example.com/hello.mp4' },
+        ],
       },
       {
-        text: 'goodbye',
-        videoUrl: 'https://example.com/goodbye.mp4',
+        title: 'goodbye',
+        videos: [
+          { title: 'Goodbye - main video', url: 'https://example.com/goodbye.mp4' },
+        ],
       },
       {
-        text: 'thank you',
-        videoUrl: 'https://example.com/thank-you.mp4',
+        title: 'thank you',
+        videos: [
+          { title: 'Thank you - main video', url: 'https://example.com/thank-you.mp4' },
+        ],
       },
       {
-        text: 'please',
-        videoUrl: 'https://example.com/please.mp4',
+        title: 'please',
+        videos: [
+          { title: 'Please - main video', url: 'https://example.com/please.mp4' },
+        ],
       },
       {
-        text: 'yes',
-        videoUrl: 'https://example.com/yes.mp4',
+        title: 'yes',
+        videos: [
+          { title: 'Yes - main video', url: 'https://example.com/yes.mp4' },
+        ],
       },
       {
-        text: 'no',
-        videoUrl: 'https://example.com/no.mp4',
+        title: 'no',
+        videos: [
+          { title: 'No - main video', url: 'https://example.com/no.mp4' },
+        ],
       },
       {
-        text: 'help',
-        videoUrl: 'https://example.com/help.mp4',
+        title: 'help',
+        videos: [
+          { title: 'Help - main video', url: 'https://example.com/help.mp4' },
+        ],
       },
       {
-        text: 'water',
-        videoUrl: 'https://example.com/water.mp4',
+        title: 'water',
+        videos: [
+          { title: 'Water - main video', url: 'https://example.com/water.mp4' },
+        ],
       },
       {
-        text: 'food',
-        videoUrl: 'https://example.com/food.mp4',
+        title: 'food',
+        videos: [
+          { title: 'Food - main video', url: 'https://example.com/food.mp4' },
+        ],
       },
       {
-        text: 'friend',
-        videoUrl: 'https://example.com/friend.mp4',
+        title: 'friend',
+        videos: [
+          { title: 'Friend - main video', url: 'https://example.com/friend.mp4' },
+        ],
       },
-    ]);
+    ];
+
+    const words = await Translator.insertMany(translatorWords);
     logger.info(`Created ${words.length} sample translator words`);
 
     logger.info('Seed data completed successfully!');
     process.exit(0);
   } catch (error) {
-    logger.error('Seed data error:', error.message);
+    logger.error({ err: error }, 'Seed data error');
+    if (error?.stack) {
+      logger.error(error.stack);
+    }
     process.exit(1);
   }
 };

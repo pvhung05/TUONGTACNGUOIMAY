@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ChatbotBubble } from "@/components/ChatbotBubble";
+import { AppShell } from "@/components/AppShell";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,7 +40,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#58cc02" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+        <AppShell>{children}</AppShell>
         <ChatbotBubble />
       </body>
     </html>

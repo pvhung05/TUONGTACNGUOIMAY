@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { Flame, TrendingUp, BookOpen, Target, Trophy } from "lucide-react";
@@ -70,7 +69,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Header />
       <main style={{ minHeight: "100vh", background: theme.colors.surface, paddingTop: "70px" }}>
         <div
           style={{

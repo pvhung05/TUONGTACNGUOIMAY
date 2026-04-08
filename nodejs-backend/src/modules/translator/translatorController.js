@@ -4,16 +4,16 @@ const logger = require('../../logger');
 class TranslatorController {
   async addWord(req, res, next) {
     try {
-      const { text, videoUrl } = req.body;
+      const { text, title, videoUrl, videos } = req.body;
 
-      if (!text || !videoUrl) {
+      if ((!text && !title) || ((!Array.isArray(videos) || videos.length === 0) && !videoUrl)) {
         return res.status(400).json({
           success: false,
-          message: 'Please provide text and videoUrl',
+          message: 'Please provide title and at least one video',
         });
       }
 
-      const word = await translatorService.addWord(text, videoUrl);
+      const word = await translatorService.addWord({ text, title, videoUrl, videos });
 
       res.status(201).json({
         success: true,
@@ -47,7 +47,7 @@ class TranslatorController {
 
   async searchWords(req, res, next) {
     try {
-      const { search } = req.query;
+      const { search, limit = 30 } = req.query;
 
       if (!search) {
         return res.status(400).json({
@@ -56,7 +56,7 @@ class TranslatorController {
         });
       }
 
-      const words = await translatorService.searchWords(search);
+      const words = await translatorService.searchWords(search, parseInt(limit, 10));
 
       res.status(200).json({
         success: true,
@@ -65,6 +65,27 @@ class TranslatorController {
       });
     } catch (error) {
       logger.error('Search words controller error:', error.message);
+      next(error);
+    }
+  }
+
+  async getDictionaryEntries(req, res, next) {
+    try {
+      const { q, search, limit = 30 } = req.query;
+      const query = q ?? search ?? '';
+      const words = await translatorService.getDictionaryEntries(query, limit);
+
+      res.status(200).json({
+        success: true,
+        message: 'Dictionary entries retrieved',
+        data: {
+          query: String(query || '').trim(),
+          count: words.length,
+          words,
+        },
+      });
+    } catch (error) {
+      logger.error('Get dictionary entries controller error:', error.message);
       next(error);
     }
   }

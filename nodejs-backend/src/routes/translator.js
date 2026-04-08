@@ -33,6 +33,17 @@ router.get('/search', (req, res, next) =>
 );
 
 /**
+ * @route   GET /api/translator/dictionary
+ * @desc    Dictionary lookup (exact + related words)
+ * @query   q/search - lookup text (optional)
+ * @query   limit - max items (default: 30)
+ * @access  Public
+ */
+router.get('/dictionary', (req, res, next) =>
+  translatorController.getDictionaryEntries(req, res, next)
+);
+
+/**
  * @route   GET /api/translator/words/:wordId
  * @desc    Get specific word
  * @access  Public

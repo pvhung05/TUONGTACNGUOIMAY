@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Trophy, Medal, Crown } from "lucide-react";
 import { getLeaderboardTop10, getMyRank } from "@/lib/api";
@@ -64,7 +63,6 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <Header />
       <main style={{ minHeight: "100vh", paddingTop: 90, background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 80px" }}>
           {/* Hero */}

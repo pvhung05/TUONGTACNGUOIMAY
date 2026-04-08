@@ -3,7 +3,7 @@ const { generateToken } = require('../../utils/jwt');
 const logger = require('../../logger');
 
 class AuthService {
-  async register(username, email, password) {
+  async register(username, email, password, role = 'user') {
     try {
       // Check if user already exists
       const existingUser = await User.findOne({
@@ -19,17 +19,19 @@ class AuthService {
         username,
         email,
         password,
+        role: role === 'admin' ? 'admin' : 'user',
       });
 
       await user.save();
 
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role);
 
       return {
         user: {
           id: user._id,
           username: user.username,
           email: user.email,
+          role: user.role,
         },
         token,
       };
@@ -53,13 +55,14 @@ class AuthService {
         throw new Error('Invalid password');
       }
 
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role);
 
       return {
         user: {
           id: user._id,
           username: user.username,
           email: user.email,
+          role: user.role,
           score: user.score,
           streak: user.streak,
         },
@@ -80,6 +83,15 @@ class AuthService {
       return user;
     } catch (error) {
       logger.error('Get user error:', error.message);
+      throw error;
+    }
+  }
+
+  async getAllUsers() {
+    try {
+      return await User.find({}).select('-password').sort({ createdAt: -1 });
+    } catch (error) {
+      logger.error('Get all users error:', error.message);
       throw error;
     }
   }

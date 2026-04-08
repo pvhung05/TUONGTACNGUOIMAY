@@ -4,7 +4,7 @@ const logger = require('../../logger');
 class AuthController {
   async register(req, res, next) {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, role } = req.body;
 
       if (!username || !email || !password) {
         return res.status(400).json({
@@ -13,7 +13,7 @@ class AuthController {
         });
       }
 
-      const result = await authService.register(username, email, password);
+      const result = await authService.register(username, email, password, role);
 
       res.status(201).json({
         success: true,
@@ -61,6 +61,21 @@ class AuthController {
       });
     } catch (error) {
       logger.error('Get profile controller error:', error.message);
+      next(error);
+    }
+  }
+
+  async getAllUsers(req, res, next) {
+    try {
+      const users = await authService.getAllUsers();
+
+      res.status(200).json({
+        success: true,
+        message: 'Users retrieved successfully',
+        data: users,
+      });
+    } catch (error) {
+      logger.error('Get all users controller error:', error.message);
       next(error);
     }
   }

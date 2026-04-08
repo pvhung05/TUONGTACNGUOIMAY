@@ -9,6 +9,7 @@ const learnRoutes = require('./routes/learn');
 const dashboardRoutes = require('./routes/dashboard');
 const leaderboardRoutes = require('./routes/leaderboard');
 const translatorRoutes = require('./routes/translator');
+const videoRoutes = require('./routes/videos');
 
 const app = express();
 
@@ -40,6 +41,8 @@ app.use('/api/learn', learnRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/translator', translatorRoutes);
+app.use('/api/videos', videoRoutes);
+app.use('/videos', videoRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

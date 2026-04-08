@@ -27,6 +27,9 @@ MONGO_URL=mongodb://localhost:27017/sign-language-learning
 SECRET_KEY=your_super_secret_jwt_key_change_this_in_production
 NODE_ENV=development
 LOG_LEVEL=debug
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 **Chú ý:** 
@@ -123,6 +126,8 @@ src/
 ### Leaderboard
 - `GET /api/leaderboard/top10` - Lấy top 10 users
 - `GET /api/leaderboard/rank` - Lấy rank của user hiện tại (requires token)
+- `GET /api/videos/numbers` - Lấy danh sách video số từ Cloudinary (1-20)
+- `GET /api/videos/alphabet/:letter` - Lấy video theo chữ cái a-z từ Cloudinary
 
 ### Translator
 - `POST /api/translator/words` - Thêm từ mới
