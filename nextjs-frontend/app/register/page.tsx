@@ -1,9 +1,35 @@
 "use client";
 
+import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
+import { registerUser, setStoredToken } from "@/lib/api";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const result = await registerUser({ username, email, password });
+      setStoredToken(result.token);
+      router.push("/dashboard");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Register failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main
       style={{
@@ -120,13 +146,15 @@ export default function RegisterPage() {
             <div style={{ flex: 1, height: 1, background: theme.colors.border }} />
           </div>
 
-          {/* Form fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <form style={{ display: "flex", flexDirection: "column", gap: 12 }} onSubmit={handleSubmit}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label style={{ ...signlearnoUpperLabel, color: theme.colors.textMuted }}>DISPLAY NAME</label>
               <input
                 type="text"
                 placeholder="John Doe"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
                 style={{
                   width: "100%",
                   padding: "13px 16px",
@@ -149,6 +177,9 @@ export default function RegisterPage() {
               <input
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 style={{
                   width: "100%",
                   padding: "13px 16px",
@@ -171,6 +202,9 @@ export default function RegisterPage() {
               <input
                 type="password"
                 placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 style={{
                   width: "100%",
                   padding: "13px 16px",
@@ -189,7 +223,8 @@ export default function RegisterPage() {
             </div>
 
             <button
-              type="button"
+              type="submit"
+              disabled={loading}
               style={{
                 width: "100%",
                 padding: "14px 20px",
@@ -197,7 +232,7 @@ export default function RegisterPage() {
                 border: "none",
                 borderBottom: `4px solid ${theme.colors.greenDark}`,
                 background: theme.colors.green,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 fontSize: 16,
                 fontWeight: 800,
                 color: "#fff",
@@ -214,9 +249,14 @@ export default function RegisterPage() {
                 e.currentTarget.style.borderBottomWidth = "4px";
               }}
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
-          </div>
+            {error ? (
+              <div style={{ ...signlearnoText, color: theme.colors.red, fontSize: 14, lineHeight: "20px" }}>
+                {error}
+              </div>
+            ) : null}
+          </form>
 
           {/* Terms */}
           <div style={{ ...signlearnoText, fontSize: 13, color: theme.colors.textMuted, textAlign: "center", marginTop: 16, lineHeight: "20px" }}>

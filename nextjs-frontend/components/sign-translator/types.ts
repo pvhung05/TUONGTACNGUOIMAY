@@ -20,8 +20,11 @@ export type PathNode = {
 };
 
 export type Unit = {
+  id?: string;
   title: string;
   subtitle: string;
+  label?: string;
+  completed?: boolean;
   color: string;
   levelsHeight: number;
   nodes: PathNode[];

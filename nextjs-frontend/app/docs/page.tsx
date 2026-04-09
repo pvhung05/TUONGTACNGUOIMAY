@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { BookOpen, Zap, Users, Award } from "lucide-react";
@@ -58,7 +57,6 @@ export default function DocsPage() {
 
   return (
     <>
-      <Header />
       <main style={{ minHeight: "100vh", paddingTop: "70px", background: theme.colors.canvas }}>
         {/* Hero Section */}
         <div
