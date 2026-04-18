@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { Flame, LogOut, Menu, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { clearStoredToken, getProfile, getStoredToken } from "@/lib/api";
 import type { MutableRefObject } from "react";
@@ -46,13 +47,59 @@ export function Header() {
     lineHeight: 1,
   };
 
+  /** Chỉ nâng chữ, không nâng cả khối nút (tránh layout nhảy) */
+  const navLabelLiftStyle = {
+    display: "inline-block" as const,
+    transition: "transform 180ms ease",
+  };
+
+  const onNavLabelLiftEnter = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+  };
+
+  const onNavLabelLiftLeave = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "none";
+  };
+
+  const onTopNavItemEnter = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+    event.currentTarget.style.color = theme.colors.green;
+  };
+
+  const onTopNavItemLeave = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "none";
+    const isActive = event.currentTarget.dataset.active === "true";
+    event.currentTarget.style.color = isActive ? theme.colors.green : theme.colors.textMuted;
+  };
+
+  const onDropdownItemEnter = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+    event.currentTarget.style.color = theme.colors.green;
+  };
+
+  const onDropdownItemLeave = (event: MouseEvent<HTMLDivElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+    if (label) label.style.transform = "none";
+    const isActive = event.currentTarget.dataset.active === "true";
+    event.currentTarget.style.color = isActive ? theme.colors.green : theme.colors.textMuted;
+  };
+
   const navigation = useMemo(() => {
+    const coreNavigation = username
+      ? baseNavigation
+      : baseNavigation.filter((item) => item.name !== "Dashboard");
+
     if (role === "admin") {
-      return [...baseNavigation, { name: "User", href: "/users", icon: "users" }];
+      return [...coreNavigation, { name: "User", href: "/users", icon: "users" }];
     }
 
-    return baseNavigation;
-  }, [role]);
+    return coreNavigation;
+  }, [role, username]);
 
   const clearTimer = (timerRef: MutableRefObject<number | null>) => {
     if (timerRef.current !== null) {
@@ -152,7 +199,9 @@ export function Header() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            flexWrap: "wrap",
+            rowGap: 10,
+            columnGap: 12,
           }}
           className="hidden md:flex"
         >
@@ -165,22 +214,27 @@ export function Header() {
                   onMouseEnter={() => openMenu(setTranslatorDropdownOpen, translatorCloseTimer)}
                   onMouseLeave={() => closeMenuSoon(setTranslatorDropdownOpen, translatorCloseTimer)}
                 >
-                  <Link href="/translator">
+                  <Link href="/translator/signtotext">
                     <div
+                    data-active={pathname.startsWith("/translator")}
                     style={{
-                      padding: "0 18px",
+                      padding: "0 16px",
                       borderRadius: 12,
                       background: pathname.startsWith("/translator") ? theme.colors.greenSoft : "transparent",
                       color: pathname.startsWith("/translator") ? theme.colors.green : theme.colors.textMuted,
                       fontSize: 14,
                       fontWeight: 600,
                       cursor: "pointer",
-                      transition: "all 200ms ease",
+                      transition: "background-color 200ms ease, color 200ms ease",
                       ...signlearnoText,
                       ...navItemStyle,
                     }}
+                    onMouseEnter={onTopNavItemEnter}
+                    onMouseLeave={onTopNavItemLeave}
                   >
-                    {item.name}
+                    <span data-nav-label style={navLabelLiftStyle}>
+                      {item.name}
+                    </span>
                     </div>
                   </Link>
                   {translatorDropdownOpen && (
@@ -203,6 +257,7 @@ export function Header() {
                     >
                       <Link href="/translator/signtotext">
                         <div
+                          data-active={pathname === "/translator/signtotext"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -213,12 +268,17 @@ export function Header() {
                             background: pathname === "/translator/signtotext" ? theme.colors.greenSoft : "transparent",
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Sign to Text
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Sign to Text
+                          </span>
                         </div>
                       </Link>
                       <Link href="/translator/texttosign">
                         <div
+                          data-active={pathname === "/translator/texttosign"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -230,8 +290,12 @@ export function Header() {
                             borderTop: `1px solid ${theme.colors.border}`,
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Text to Sign
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Text to Sign
+                          </span>
                         </div>
                       </Link>
                     </div>
@@ -247,22 +311,27 @@ export function Header() {
                   onMouseEnter={() => openMenu(setLearnDropdownOpen, learnCloseTimer)}
                   onMouseLeave={() => closeMenuSoon(setLearnDropdownOpen, learnCloseTimer)}
                 >
-                  <Link href="/learn">
+                  <Link href="/learn/lesson">
                     <div
+                    data-active={pathname.startsWith("/learn")}
                     style={{
-                      padding: "0 18px",
+                      padding: "0 16px",
                       borderRadius: 12,
                       background: pathname.startsWith("/learn") ? theme.colors.greenSoft : "transparent",
                       color: pathname.startsWith("/learn") ? theme.colors.green : theme.colors.textMuted,
                       fontSize: 14,
                       fontWeight: 600,
                       cursor: "pointer",
-                      transition: "all 200ms ease",
+                      transition: "background-color 200ms ease, color 200ms ease",
                       ...signlearnoText,
                       ...navItemStyle,
                     }}
+                    onMouseEnter={onTopNavItemEnter}
+                    onMouseLeave={onTopNavItemLeave}
                   >
-                    {item.name}
+                    <span data-nav-label style={navLabelLiftStyle}>
+                      {item.name}
+                    </span>
                     </div>
                   </Link>
                   {learnDropdownOpen && (
@@ -285,6 +354,7 @@ export function Header() {
                     >
                       <Link href="/learn/lesson">
                         <div
+                          data-active={pathname === "/learn/lesson"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -295,12 +365,17 @@ export function Header() {
                             background: pathname === "/learn/lesson" ? theme.colors.greenSoft : "transparent",
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Lesson
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Lesson
+                          </span>
                         </div>
                       </Link>
                       <Link href="/learn/practice">
                         <div
+                          data-active={pathname === "/learn/practice"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -312,8 +387,12 @@ export function Header() {
                             borderTop: `1px solid ${theme.colors.border}`,
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Practice
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Practice
+                          </span>
                         </div>
                       </Link>
                     </div>
@@ -329,22 +408,27 @@ export function Header() {
                   onMouseEnter={() => openMenu(setDictionaryDropdownOpen, dictionaryCloseTimer)}
                   onMouseLeave={() => closeMenuSoon(setDictionaryDropdownOpen, dictionaryCloseTimer)}
                 >
-                  <Link href="/dictionary">
+                  <Link href="/dictionary/sign-alphabet">
                     <div
+                      data-active={pathname.startsWith("/dictionary")}
                       style={{
-                        padding: "0 18px",
+                        padding: "0 16px",
                         borderRadius: 12,
                         background: pathname.startsWith("/dictionary") ? theme.colors.greenSoft : "transparent",
                         color: pathname.startsWith("/dictionary") ? theme.colors.green : theme.colors.textMuted,
                         fontSize: 14,
                         fontWeight: 600,
                         cursor: "pointer",
-                        transition: "all 200ms ease",
+                        transition: "background-color 200ms ease, color 200ms ease",
                         ...signlearnoText,
                         ...navItemStyle,
                       }}
+                      onMouseEnter={onTopNavItemEnter}
+                      onMouseLeave={onTopNavItemLeave}
                     >
-                      {item.name}
+                      <span data-nav-label style={navLabelLiftStyle}>
+                        {item.name}
+                      </span>
                     </div>
                   </Link>
                   {dictionaryDropdownOpen && (
@@ -367,6 +451,7 @@ export function Header() {
                     >
                       <Link href="/dictionary/sign-alphabet">
                         <div
+                          data-active={pathname === "/dictionary/sign-alphabet"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -377,12 +462,17 @@ export function Header() {
                             background: pathname === "/dictionary/sign-alphabet" ? theme.colors.greenSoft : "transparent",
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Sign Alphabet
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Sign Alphabet
+                          </span>
                         </div>
                       </Link>
                       <Link href="/dictionary/word-search">
                         <div
+                          data-active={pathname === "/dictionary/word-search"}
                           style={{
                             padding: "12px 18px",
                             cursor: "pointer",
@@ -394,8 +484,12 @@ export function Header() {
                             borderTop: `1px solid ${theme.colors.border}`,
                             ...signlearnoText,
                           }}
+                          onMouseEnter={onDropdownItemEnter}
+                          onMouseLeave={onDropdownItemLeave}
                         >
-                          Word Search
+                          <span data-nav-label style={navLabelLiftStyle}>
+                            Word Search
+                          </span>
                         </div>
                       </Link>
                     </div>
@@ -407,20 +501,25 @@ export function Header() {
             return (
               <Link key={item.href} href={item.href}>
                 <div
+                  data-active={isActive}
                   style={{
-                    padding: "0 18px",
+                    padding: "0 16px",
                     borderRadius: 12,
                     background: isActive ? theme.colors.greenSoft : "transparent",
                     color: isActive ? theme.colors.green : theme.colors.textMuted,
                     fontSize: 14,
                     fontWeight: 600,
                     cursor: "pointer",
-                    transition: "all 200ms ease",
+                    transition: "background-color 200ms ease, color 200ms ease",
                     ...signlearnoText,
                     ...navItemStyle,
                   }}
+                  onMouseEnter={onTopNavItemEnter}
+                  onMouseLeave={onTopNavItemLeave}
                 >
-                  {item.name}
+                  <span data-nav-label style={navLabelLiftStyle}>
+                    {item.name}
+                  </span>
                 </div>
               </Link>
             );
@@ -436,13 +535,15 @@ export function Header() {
           }}
           className="hidden md:flex"
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Flame size={20} color={theme.colors.orange} fill={theme.colors.orange} />
-            <span style={{ color: theme.colors.orange, fontSize: 16, fontWeight: 700, ...signlearnoText }}>{streak}</span>
-          </div>
-
-
-          <div style={{ width: 1, height: 24, background: theme.colors.border }} />
+          {username && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Flame size={20} color={theme.colors.orange} fill={theme.colors.orange} />
+                <span style={{ color: theme.colors.orange, fontSize: 16, fontWeight: 700, ...signlearnoText }}>{streak}</span>
+              </div>
+              <div style={{ width: 1, height: 24, background: theme.colors.border }} />
+            </>
+          )}
 
           <ThemeToggle />
 
@@ -483,42 +584,76 @@ export function Header() {
               </button>
             </>
           ) : (
-            <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0,
+                padding: 4,
+                borderRadius: 12,
+                border: `2px solid ${theme.colors.border}`,
+                background: theme.colors.surface,
+              }}
+            >
               <Link href="/login">
                 <div
                   style={{
                     padding: "8px 16px",
-                    borderRadius: 10,
-                    border: `2px solid ${theme.colors.border}`,
+                    borderRadius: 8,
+                    border: "none",
+                    background: "transparent",
                     fontSize: 14,
                     fontWeight: 700,
                     color: theme.colors.textStrong,
                     cursor: "pointer",
+                    transition: "background-color 200ms ease",
                     ...signlearnoText,
                   }}
+                  onMouseEnter={onNavLabelLiftEnter}
+                  onMouseLeave={onNavLabelLiftLeave}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.filter = "brightness(0.97)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.filter = "none";
+                  }}
                 >
-                  Log in
+                  <span data-nav-label style={navLabelLiftStyle}>
+                    Log in
+                  </span>
                 </div>
               </Link>
+              <div
+                style={{
+                  width: 1,
+                  height: 24,
+                  background: theme.colors.border,
+                  margin: "0 6px",
+                }}
+              />
               <Link href="/register">
                 <div
                   style={{
                     padding: "8px 18px",
-                    borderRadius: 10,
+                    borderRadius: 8,
                     border: "none",
-                    borderBottom: `3px solid ${theme.colors.greenDark}`,
                     background: theme.colors.green,
                     fontSize: 14,
                     fontWeight: 700,
                     color: "#fff",
                     cursor: "pointer",
+                    transition: "filter 200ms ease, background-color 200ms ease",
                     ...signlearnoText,
                   }}
+                  onMouseEnter={onNavLabelLiftEnter}
+                  onMouseLeave={onNavLabelLiftLeave}
                 >
-                  Sign up
+                  <span data-nav-label style={navLabelLiftStyle}>
+                    Sign up
+                  </span>
                 </div>
               </Link>
-            </>
+            </div>
           )}
         </div>
 
@@ -546,7 +681,7 @@ export function Header() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
+            gap: 12,
             padding: "16px 20px",
             borderTop: `1px solid ${theme.colors.border}`,
             background: theme.colors.surface,

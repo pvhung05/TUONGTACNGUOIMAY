@@ -53,6 +53,10 @@
     --signlearno-grid: #ececec;
     --signlearno-chart-fill: rgba(255, 200, 0, 0.12);
     --signlearno-focus: rgba(28, 176, 246, 0.18);
+    --signlearno-elevated: #ffffff;
+    --signlearno-glass: rgba(255, 255, 255, 0.88);
+    --signlearno-soft-gradient-start: rgba(229, 247, 215, 0.9);
+    --signlearno-soft-gradient-end: rgba(255, 255, 255, 0.98);
   }
 
   .dark {
@@ -81,30 +85,34 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     /* signlearno dark tokens */
-    --signlearno-surface: #1f1f1f;
-    --signlearno-canvas: #111111;
-    --signlearno-border: #2e2e2e;
-    --signlearno-text-strong: #e8e8e8;
-    --signlearno-text-muted: #9a9a9a;
-    --signlearno-text-soft: #5a5a5a;
+    --signlearno-surface: #161b20;
+    --signlearno-canvas: #0f1317;
+    --signlearno-border: #2b343d;
+    --signlearno-text-strong: #e7edf4;
+    --signlearno-text-muted: #a7b3bf;
+    --signlearno-text-soft: #6f7d8a;
     --signlearno-blue: #1cb0f6;
-    --signlearno-blue-soft: #0e2e3d;
-    --signlearno-blue-border: #1a5a7a;
-    --signlearno-green: #58cc02;
-    --signlearno-green-dark: #3e9100;
-    --signlearno-green-soft: #1a2e0a;
-    --signlearno-yellow: #ffc800;
-    --signlearno-yellow-soft: #2e2400;
+    --signlearno-blue-soft: #123347;
+    --signlearno-blue-border: #1f6489;
+    --signlearno-green: #79df2e;
+    --signlearno-green-dark: #5caf22;
+    --signlearno-green-soft: #182815;
+    --signlearno-yellow: #ffd34d;
+    --signlearno-yellow-soft: #352d14;
     --signlearno-orange: #ff9600;
-    --signlearno-red: #ff4b4b;
-    --signlearno-purple: #b779ff;
-    --signlearno-purple-soft: #1e1030;
-    --signlearno-node: #2e2e2e;
-    --signlearno-node-shadow: #0a0a0a;
-    --signlearno-node-icon: #5a5a5a;
-    --signlearno-grid: #2a2a2a;
+    --signlearno-red: #ff6b6b;
+    --signlearno-purple: #c295ff;
+    --signlearno-purple-soft: #29183d;
+    --signlearno-node: #273038;
+    --signlearno-node-shadow: #0b0f13;
+    --signlearno-node-icon: #7a8998;
+    --signlearno-grid: #242c34;
     --signlearno-chart-fill: rgba(255, 200, 0, 0.08);
     --signlearno-focus: rgba(28, 176, 246, 0.22);
+    --signlearno-elevated: #1d242b;
+    --signlearno-glass: rgba(29, 36, 43, 0.9);
+    --signlearno-soft-gradient-start: rgba(24, 40, 21, 0.9);
+    --signlearno-soft-gradient-end: rgba(22, 27, 32, 0.98);
   }
 }
 
@@ -139,6 +147,14 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #3a4652;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #4c5b69;
   }
 
   /* Selection */

@@ -1,11 +1,48 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Footer } from "@/components/shared";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
+import heroLogo from "@/components/Gemini_Generated_Image_7bvlng7bvlng7bvl (1).png";
 
 export default function LandingPage() {
+  const heroCtaBaseStyle = {
+    padding: "16px 32px",
+    borderRadius: 16,
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    transition: "background-color 220ms ease, border-color 220ms ease, filter 220ms ease",
+    ...signlearnoText,
+  };
+
+  const ctaLabelLiftStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 12,
+    transition: "transform 180ms ease",
+  };
+
+  const onHeroCtaMouseEnter = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+    event.currentTarget.style.boxShadow = "0 14px 30px rgba(15, 23, 42, 0.16)";
+  };
+
+  const onHeroCtaMouseLeave = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "none";
+    const resetShadow = event.currentTarget.dataset.shadowRest;
+    if (resetShadow) {
+      event.currentTarget.style.boxShadow = resetShadow;
+    }
+  };
+
   return (
     <>
       <main style={{ minHeight: "100vh", paddingTop: "70px" }}>
@@ -89,64 +126,45 @@ export default function LandingPage() {
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                 <Link href="/learn">
                   <button
+                    data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
                     style={{
-                      padding: "16px 32px",
-                      borderRadius: 16,
                       border: "none",
                       background: theme.colors.green,
                       color: theme.colors.surface,
-                      fontSize: 16,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
                       boxShadow: "0 8px 24px rgba(88, 204, 2, 0.3)",
-                      transition: "all 200ms ease",
+                      ...heroCtaBaseStyle,
                       ...signlearnoText,
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 12px 32px rgba(88, 204, 2, 0.4)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 8px 24px rgba(88, 204, 2, 0.3)";
-                    }}
+                    onMouseEnter={onHeroCtaMouseEnter}
+                    onMouseLeave={onHeroCtaMouseLeave}
                   >
-                    Start Learning
-                    <ArrowRight size={18} />
+                    <span data-cta-label style={ctaLabelLiftStyle}>
+                      Start Learning
+                      <ArrowRight size={18} />
+                    </span>
                   </button>
                 </Link>
 
                 <a href="#features">
                   <button
+                    data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.12)"
                     style={{
-                      padding: "16px 32px",
-                      borderRadius: 16,
                       border: `2px solid ${theme.colors.border}`,
                       background: theme.colors.surface,
                       color: theme.colors.textStrong,
-                      fontSize: 16,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      transition: "all 200ms ease",
+                      boxShadow: "0 8px 24px rgba(88, 204, 2, 0.12)",
+                      ...heroCtaBaseStyle,
                       ...signlearnoText,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = theme.colors.greenSoft;
-                      e.currentTarget.style.borderColor = theme.colors.green;
+                      onHeroCtaMouseEnter(e);
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = theme.colors.surface;
-                      e.currentTarget.style.borderColor = theme.colors.border;
-                    }}
+                    onMouseLeave={onHeroCtaMouseLeave}
                   >
-                    <Play size={18} />
-                    Watch Demo
+                    <span data-cta-label style={ctaLabelLiftStyle}>
+                      <Play size={18} />
+                      Watch Demo
+                    </span>
                   </button>
                 </a>
               </div>
@@ -188,53 +206,37 @@ export default function LandingPage() {
             {/* Right Visual */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-                perspective: "1000px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 420,
+                pointerEvents: "none",
               }}
             >
-              {[
-                { title: "Learn", color: theme.colors.blue, delay: 0 },
-                { title: "Practice", color: theme.colors.green, delay: 0.1 },
-                { title: "Master", color: theme.colors.orange, delay: 0.2 },
-                { title: "Celebrate", color: theme.colors.yellow, delay: 0.3 },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: 520,
+                  aspectRatio: "1 / 1",
+                  overflow: "visible",
+                  pointerEvents: "none",
+                }}
+              >
+                <Image
+                  src={heroLogo}
+                  alt="SignLearn logo"
+                  fill
                   style={{
-                    aspectRatio: "1",
-                    borderRadius: 16,
-                    background: `linear-gradient(135deg, ${item.color}20 0%, ${item.color}05 100%)`,
-                    border: `2px solid ${item.color}40`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    transition: "all 300ms ease",
-                    animation: `slideInUp 0.6s ease-out ${item.delay}s backwards`,
+                    objectFit: "contain",
+                    transform: "translateY(36px) scale(4)",
+                    transformOrigin: "center",
+                    pointerEvents: "none",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-8px)";
-                    e.currentTarget.style.boxShadow = `0 16px 40px ${item.color}30`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  <span
-                    style={{
-                      color: item.color,
-                      fontSize: 20,
-                      fontWeight: 800,
-                      ...signlearnoText,
-                    }}
-                  >
-                    {item.title}
-                  </span>
-                </div>
-              ))}
+                  priority
+                />
+              </div>
+              {/* Removed 4 feature tiles (Learn/Practice/Master/Celebrate) */}
             </div>
           </div>
         </section>

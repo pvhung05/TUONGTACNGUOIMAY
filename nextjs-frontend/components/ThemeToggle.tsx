@@ -35,17 +35,35 @@ export function ThemeToggle() {
         width: 38,
         height: 38,
         borderRadius: 10,
-        border: `2px solid ${theme.colors.border}`,
+        border: "none",
         background: theme.colors.surface,
         cursor: "pointer",
         color: theme.colors.textMuted,
-        transition: "border-color 140ms, background 140ms",
+        transition: "background 140ms",
         flexShrink: 0,
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.colors.green)}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme.colors.border)}
+      onMouseEnter={(e) => {
+        const icon = e.currentTarget.querySelector<HTMLElement>("[data-theme-icon]");
+        if (icon) icon.style.transform = "translateY(-2px)";
+        e.currentTarget.style.color = theme.colors.green;
+      }}
+      onMouseLeave={(e) => {
+        const icon = e.currentTarget.querySelector<HTMLElement>("[data-theme-icon]");
+        if (icon) icon.style.transform = "none";
+        e.currentTarget.style.color = theme.colors.textMuted;
+      }}
     >
-      {dark ? <Sun size={18} /> : <Moon size={18} />}
+      <span
+        data-theme-icon
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform 180ms ease",
+        }}
+      >
+        {dark ? <Sun size={27} /> : <Moon size={27} />}
+      </span>
     </button>
   );
 }

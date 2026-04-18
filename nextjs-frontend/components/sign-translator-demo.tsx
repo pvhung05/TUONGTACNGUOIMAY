@@ -18,7 +18,14 @@ export function SignTranslatorDemo({ translatorMode }: { translatorMode?: "textT
 
   return translatorMode ? (
     // Translator mode - simplified layout without sidebar
-    <div style={{ width: "100%" }}>
+    <div
+      style={{
+        maxWidth: 1440,
+        margin: "0 auto",
+        padding: "24px 24px 0",
+        boxSizing: "border-box",
+      }}
+    >
       {translatorMode === "textToSign" ? <TextToSignExperience /> : <SignToTextExperience />}
     </div>
   ) : (

@@ -8,6 +8,8 @@ import { translateTextToSign } from "@/lib/api/sign-translation";
 import type { TextToSignResult } from "@/lib/types";
 
 export function TextToSignExperience() {
+  const videoSurfaceBg =
+    "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)";
   const [inputText, setInputText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +53,28 @@ export function TextToSignExperience() {
     }
   };
 
+  const ctaLabelLiftStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 12,
+    transition: "transform 180ms ease",
+  };
+
+  const onCtaMouseEnter = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+    event.currentTarget.style.boxShadow = "0 14px 30px rgba(15, 23, 42, 0.16)";
+  };
+
+  const onCtaMouseLeave = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "none";
+    const resetShadow = event.currentTarget.dataset.shadowRest;
+    if (resetShadow) event.currentTarget.style.boxShadow = resetShadow;
+  };
+
   return (
-    <section style={{ width: TOOL_WIDTH, margin: "0 auto" }}>
+    <section style={{ width: "100%", maxWidth: TOOL_WIDTH, margin: "0 auto", padding: "0 12px", boxSizing: "border-box" }}>
       <div
         style={{
           borderRadius: 30,
@@ -62,28 +84,24 @@ export function TextToSignExperience() {
           boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
+          height: 600,
+          alignItems: "stretch",
         }}
       >
-        <section style={{ padding: 36 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Type Message</span>
-            <span style={{ color: theme.colors.textMuted, fontSize: 14, lineHeight: "18px", fontWeight: 700, ...signlearnoText }}>
-              Input
-            </span>
-          </div>
-
+        <section style={{ padding: 0, height: 600, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
           <textarea
             value={inputText}
             onChange={(event) => setInputText(event.target.value)}
             placeholder={TEXT_TO_SIGN_PLACEHOLDER}
             style={{
-              marginTop: 26,
+              position: "absolute",
+              inset: 0,
               width: "100%",
-              minHeight: 420,
-              borderRadius: 24,
+              height: "100%",
+              borderRadius: 0,
               border: "none",
-              background: "linear-gradient(180deg, rgba(229, 247, 215, 0.38) 0%, rgba(221, 244, 255, 0.22) 100%)",
-              padding: 24,
+              background: "linear-gradient(180deg, color-mix(in srgb, var(--signlearno-soft-gradient-start) 42%, transparent) 0%, color-mix(in srgb, var(--signlearno-blue-soft) 26%, transparent) 100%)",
+              padding: "64px 20px 236px",
               color: theme.colors.textStrong,
               fontSize: 22,
               lineHeight: "32px",
@@ -95,7 +113,11 @@ export function TextToSignExperience() {
             }}
           />
 
-          <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 }}>
+          <div style={{ position: "absolute", top: 24, left: 24, right: 24, display: "flex", alignItems: "center", justifyContent: "space-between", pointerEvents: "none" }}>
+            <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Type Message</span>
+          </div>
+
+          <div style={{ position: "absolute", left: 24, right: 24, bottom: 180, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 }}>
             <span style={{ color: theme.colors.textMuted, fontSize: 15, lineHeight: "20px", fontWeight: 700, ...signlearnoText }}>
               {inputText.trim().length} / 500
             </span>
@@ -104,68 +126,99 @@ export function TextToSignExperience() {
               type="button"
               disabled={isSubmitting || !inputText.trim()}
               onClick={() => { void runTranslation(inputText); }}
+              data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
+              onMouseEnter={onCtaMouseEnter}
+              onMouseLeave={onCtaMouseLeave}
               style={{
-                height: 72,
-                padding: "0 30px",
-                borderRadius: 24,
+                padding: "16px 32px",
+                borderRadius: 16,
                 border: "none",
                 background: theme.colors.green,
-                color: "#FFFFFF",
+                color: theme.colors.surface,
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
+                gap: 12,
                 cursor: isSubmitting || !inputText.trim() ? "not-allowed" : "pointer",
                 opacity: isSubmitting || !inputText.trim() ? 0.7 : 1,
-                boxShadow: "inset 0 -5px 0 rgba(0,0,0,0.18)",
-                fontSize: 20,
-                lineHeight: "24px",
-                fontWeight: 800,
+                boxShadow: "0 8px 24px rgba(88, 204, 2, 0.3)",
+                transition: "filter 200ms ease, box-shadow 200ms ease",
+                fontSize: 16,
+                lineHeight: "20px",
+                fontWeight: 700,
                 ...signlearnoText,
               }}
             >
-              {isSubmitting ? "Translating..." : "Translate"}
-              <SendHorizontal size={22} />
+              <span data-cta-label style={ctaLabelLiftStyle}>
+                {isSubmitting ? "Translating..." : "Translate"}
+                <SendHorizontal size={18} />
+              </span>
             </button>
+          </div>
+
+          <div style={{ position: "absolute", left: 24, right: 24, bottom: 24, paddingTop: 12, borderTop: "2px solid rgba(88, 204, 2, 0.16)", display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Clock3 size={16} color={theme.colors.green} />
+                <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Recently Translated</span>
+              </div>
+              <button type="button" onClick={() => setRecentPhrases([])} style={{ border: "none", background: "transparent", color: theme.colors.green, cursor: "pointer", fontSize: 14, lineHeight: "18px", fontWeight: 700, ...signlearnoText }}>
+                Clear
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {recentPhrases.slice(0, 5).map((phrase) => (
+                <button
+                  key={phrase}
+                  type="button"
+                  onClick={() => { setInputText(phrase); void runTranslation(phrase); }}
+                  style={{ padding: "8px 12px", borderRadius: 999, border: `2px solid ${theme.colors.border}`, background: "var(--signlearno-glass)", display: "flex", alignItems: "center", cursor: "pointer", color: theme.colors.textStrong, fontSize: 13, lineHeight: "18px", fontWeight: 600, ...signlearnoText, whiteSpace: "nowrap" }}
+                >
+                  <span>&ldquo;{phrase}&rdquo;</span>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section style={{ padding: 0, background: "linear-gradient(180deg, rgba(229, 247, 215, 0.88) 0%, rgba(255,255,255,0.98) 100%)", color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
-          <div style={{ position: "relative", flex: 1, background: "linear-gradient(180deg, rgba(229, 247, 215, 0.94) 0%, rgba(255,255,255,0.98) 100%)", boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.08)", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 22, borderRadius: 22, background: "#FFFFFF", border: "2px solid rgba(88, 204, 2, 0.18)", boxShadow: "inset 0 0 0 1px rgba(88, 204, 2, 0.05)", padding: 26, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 18, justifyContent: translation ? "flex-start" : "center" }}>
+        <section style={{ padding: 0, height: 600, boxSizing: "border-box", background: videoSurfaceBg, color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
+          <div style={{ position: "relative", flex: 1, background: videoSurfaceBg, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, minHeight: 0, width: "100%", overflow: "hidden", position: "relative" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 24,
+                  left: 24,
+                  zIndex: 2,
+                  color: theme.colors.green,
+                  textShadow: "0 1px 0 color-mix(in srgb, var(--signlearno-elevated) 75%, transparent)",
+                  ...signlearnoUpperLabel,
+                }}
+              >
+                Generated Sign Video
+              </div>
               {translation ? (
                 <>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-                    <div>
-                      <div style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Generated Sign Video</div>
-                      <div style={{ marginTop: 10, color: theme.colors.textStrong, fontSize: 18, lineHeight: "28px", fontWeight: 700, ...signlearnoText }}>
-                        {translation.normalized_text || "No text submitted"}
-                      </div>
-                    </div>
-                    <div style={{ flexShrink: 0, borderRadius: 999, padding: "10px 14px", border: "2px solid rgba(88, 204, 2, 0.14)", background: "linear-gradient(180deg, rgba(229, 247, 215, 0.62) 0%, rgba(255,255,255,0.95) 100%)", color: theme.colors.green, fontSize: 13, lineHeight: "18px", fontWeight: 800, ...signlearnoUpperLabel }}>
-                      Ready To Play
-                    </div>
-                  </div>
-
-                  <div style={{ flex: 1, minHeight: 0, borderRadius: 20, border: "2px solid rgba(88, 204, 2, 0.18)", background: "linear-gradient(180deg, rgba(221, 244, 255, 0.24) 0%, rgba(255,255,255,1) 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, boxSizing: "border-box" }}>
-                    <div style={{ width: "100%", aspectRatio: "4 / 5", borderRadius: 18, overflow: "hidden", background: "#F7FAFC", boxShadow: "0 18px 36px rgba(17, 24, 39, 0.08)" }}>
-                      <video
-                        key={translation.video_url}
-                        src={translation.video_url}
-                        controls autoPlay loop muted playsInline
-                        onError={() => setVideoPlaybackError("The generated sign video could not be played in this browser.")}
-                        style={{ width: "100%", height: "100%", display: "block", objectFit: "contain", background: "#F7FAFC" }}
-                      />
-                    </div>
-                  </div>
+                  <video
+                    key={translation.video_url}
+                    src={translation.video_url}
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    onError={() => setVideoPlaybackError("The generated sign video could not be played in this browser.")}
+                    style={{ width: "100%", height: "100%", display: "block", objectFit: "cover", background: videoSurfaceBg }}
+                  />
 
                   {videoPlaybackError ? (
-                    <div style={{ color: theme.colors.red, fontSize: 14, lineHeight: "22px", fontWeight: 700, ...signlearnoText }}>
+                    <div style={{ position: "absolute", right: 16, bottom: 16, borderRadius: 10, background: "var(--signlearno-glass)", padding: "8px 10px", color: theme.colors.red, fontSize: 13, lineHeight: "18px", fontWeight: 700, ...signlearnoText }}>
                       {videoPlaybackError}
                     </div>
                   ) : null}
                 </>
               ) : (
-                <div style={{ textAlign: "center", color: error ? theme.colors.red : theme.colors.textMuted, fontSize: 20, lineHeight: "30px", fontWeight: 700, padding: "0 24px", ...signlearnoText }}>
+                <div style={{ width: "100%", height: "100%", background: videoSurfaceBg, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", color: error ? theme.colors.red : theme.colors.textMuted, fontSize: 20, lineHeight: "30px", fontWeight: 700, padding: "0 24px", ...signlearnoText }}>
                   {error || "Your translated sign video will appear here."}
                 </div>
               )}
@@ -173,31 +226,10 @@ export function TextToSignExperience() {
           </div>
         </section>
       </div>
-
-      <section style={{ marginTop: 24, padding: 28, borderRadius: 30, background: theme.colors.surface, border: `2px solid ${theme.colors.border}`, boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Clock3 size={20} color={theme.colors.green} />
-            <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>Recently Translated</span>
-          </div>
-          <button type="button" onClick={() => setRecentPhrases([])} style={{ border: "none", background: "transparent", color: theme.colors.green, cursor: "pointer", fontSize: 16, lineHeight: "22px", fontWeight: 700, ...signlearnoText }}>
-            Clear
-          </button>
-        </div>
-
-        <div style={{ marginTop: 20, display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {recentPhrases.map((phrase) => (
-            <button
-              key={phrase}
-              type="button"
-              onClick={() => { setInputText(phrase); void runTranslation(phrase); }}
-              style={{ padding: "15px 18px", borderRadius: 999, border: `2px solid ${theme.colors.border}`, background: "linear-gradient(180deg, rgba(229, 247, 215, 0.28) 0%, rgba(255,255,255,0.92) 100%)", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", color: theme.colors.textStrong, fontSize: 16, lineHeight: "22px", fontWeight: 500, ...signlearnoText, textAlign: "left" }}
-            >
-              <span>&ldquo;{phrase}&rdquo;</span>
-            </button>
-          ))}
-        </div>
-      </section>
     </section>
   );
 }
+
+
+
+
