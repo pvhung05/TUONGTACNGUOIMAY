@@ -155,14 +155,14 @@ export function Header() {
     <header
       style={{
         width: "100%",
-        borderBottom: `2px solid ${theme.colors.border}`,
-        background: theme.colors.surface,
+        borderBottom: "none",
+        background: "transparent",
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         zIndex: 40,
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+        boxShadow: "none",
       }}
     >
       <div

@@ -2,9 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { loginUser, setStoredToken } from "@/lib/api";
+import heroLogo from "@/components/Gemini_Generated_Image_7bvlng7bvlng7bvl (1).png";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,57 +31,130 @@ export default function LoginPage() {
     }
   };
 
+  const heroCtaBaseStyle = {
+    width: "100%",
+    padding: "16px 32px",
+    borderRadius: 16,
+    border: "none",
+    background: theme.colors.green,
+    color: theme.colors.surface,
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    boxShadow: "0 8px 24px rgba(88, 204, 2, 0.3)",
+    transition: "background-color 220ms ease, border-color 220ms ease, filter 220ms ease",
+    ...signlearnoText,
+  };
+
+  const ctaLabelLiftStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 12,
+    transition: "transform 180ms ease",
+  };
+
+  const onHeroCtaMouseEnter = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "translateY(-2px)";
+    event.currentTarget.style.boxShadow = "0 14px 30px rgba(15, 23, 42, 0.16)";
+  };
+
+  const onHeroCtaMouseLeave = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const label = event.currentTarget.querySelector<HTMLElement>("[data-cta-label]");
+    if (label) label.style.transform = "none";
+    const resetShadow = event.currentTarget.dataset.shadowRest;
+    if (resetShadow) event.currentTarget.style.boxShadow = resetShadow;
+  };
+
   return (
     <main
       style={{
         minHeight: "100vh",
-        display: "flex",
+        display: "grid",
+        gridTemplateColumns: "minmax(320px, 44vw) 1fr",
         fontFamily: theme.fontFamily,
-        background: theme.colors.canvas,
+        background: `linear-gradient(135deg, ${theme.colors.greenSoft} 0%, rgba(28, 176, 246, 0.05) 100%)`,
+        overflow: "hidden",
+        position: "relative",
       }}
     >
-      {/* Left panel — branding */}
+      {/* Left panel — home-like hero with faded logo */}
       <div
         style={{
-          flex: "0 0 420px",
-          background: theme.colors.green,
+          position: "relative",
+          background: "transparent",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
-          gap: 24,
-          padding: 48,
+          gap: 28,
+          padding: "56px 52px",
+          borderRight: "none",
+          overflow: "hidden",
         }}
         className="hidden md:flex"
       >
+        <div
+          style={{
+            position: "absolute",
+            left: "-18%",
+            top: "50%",
+            width: "170%",
+            aspectRatio: "1 / 1",
+            transform: "translateY(-50%)",
+            opacity: 0.24,
+            pointerEvents: "none",
+          }}
+        >
+          <Image
+            src={heroLogo}
+            alt="Signlearno faded logo"
+            fill
+            priority
+            style={{
+              objectFit: "contain",
+              transform: "scale(1.62)",
+              transformOrigin: "center",
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+
         {/* Logo */}
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <div style={{ fontSize: 42, fontWeight: 900, color: "#fff", letterSpacing: -1.5, ...signlearnoText }}>
+        <Link href="/" style={{ textDecoration: "none", position: "relative", zIndex: 1 }}>
+          <div style={{ fontSize: 56, lineHeight: "58px", fontWeight: 900, color: theme.colors.green, letterSpacing: -1.8, ...signlearnoText }}>
             signlearno
           </div>
         </Link>
         {/* Tagline */}
-        <div style={{ fontSize: 18, fontWeight: 600, color: "rgba(255,255,255,0.88)", textAlign: "center", lineHeight: "28px", ...signlearnoText }}>
-          Learn sign language<br />for free — fun as a game
+        <div style={{ position: "relative", zIndex: 1, fontSize: 50, fontWeight: 800, color: theme.colors.textStrong, lineHeight: "60px", letterSpacing: -1.4, ...signlearnoText }}>
+          Learn sign language
+          <br />
+          for free - fun as a game
         </div>
 
-        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: "22px", ...signlearnoText }}>
-          Join thousands of learners<br />practicing sign language every day
+        <div style={{ position: "relative", zIndex: 1, fontSize: 34, color: theme.colors.textMuted, lineHeight: "46px", maxWidth: 680, ...signlearnoText }}>
+          Join thousands of learners practicing sign language every day
         </div>
+
       </div>
 
       {/* Right panel — form */}
       <div
         style={{
-          flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "40px 24px",
+          padding: "40px 24px 32px",
+          background: "transparent",
         }}
       >
-        <div style={{ width: "100%", maxWidth: 400 }}>
+        <div style={{ width: "100%", maxWidth: 430, borderRadius: 28, border: `2px solid ${theme.colors.border}`, background: theme.colors.surface, boxShadow: "0 22px 50px rgba(17, 24, 39, 0.08)", padding: "28px 26px" }}>
           {/* Mobile logo */}
           <Link href="/" style={{ textDecoration: "none" }}>
             <div
@@ -90,7 +165,7 @@ export default function LoginPage() {
             </div>
           </Link>
 
-          <div style={{ ...signlearnoText, fontSize: 26, fontWeight: 800, color: theme.colors.textStrong, marginBottom: 8 }}>
+          <div style={{ ...signlearnoText, fontSize: 34, lineHeight: "40px", fontWeight: 800, color: theme.colors.textStrong, marginBottom: 8, letterSpacing: -1 }}>
             Welcome back!
           </div>
           <div style={{ ...signlearnoText, fontSize: 15, color: theme.colors.textMuted, marginBottom: 32, lineHeight: "22px" }}>
@@ -100,43 +175,23 @@ export default function LoginPage() {
           {/* Google button */}
           <button
             type="button"
+            data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              padding: "14px 20px",
-              borderRadius: 12,
-              border: `2px solid ${theme.colors.border}`,
-              borderBottom: `4px solid ${theme.colors.border}`,
-              background: theme.colors.surface,
-              cursor: "pointer",
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.colors.textStrong,
-              ...signlearnoText,
-              transition: "border-color 140ms, transform 140ms",
+              ...heroCtaBaseStyle,
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = theme.colors.blue;
-              e.currentTarget.style.transform = "translateY(1px)";
-              e.currentTarget.style.borderBottomWidth = "2px";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = theme.colors.border;
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.borderBottomWidth = "4px";
-            }}
+            onMouseEnter={onHeroCtaMouseEnter}
+            onMouseLeave={onHeroCtaMouseLeave}
           >
-            {/* Google G icon SVG */}
-            <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-              <path fill="#FFC107" d="M43.6 20.5h-1.9V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.9 1.1 8 3l5.7-5.7C34.2 6.7 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z" />
-              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.9 1.1 8 3l5.7-5.7C34.2 6.7 29.3 4 24 4 16.3 4 9.7 8.6 6.3 14.7z" />
-              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.4-11.3-8H6.2C9.5 38.9 16.2 44 24 44z" />
-              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.7l6.2 5.2C41.1 35.3 44 30 44 24c0-1.2-.1-2.3-.4-3.5z" />
-            </svg>
-            Continue with Google
+            <span data-cta-label style={ctaLabelLiftStyle}>
+              {/* Google G icon SVG */}
+              <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FFC107" d="M43.6 20.5h-1.9V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.9 1.1 8 3l5.7-5.7C34.2 6.7 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z" />
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.9 1.1 8 3l5.7-5.7C34.2 6.7 29.3 4 24 4 16.3 4 9.7 8.6 6.3 14.7z" />
+                <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.4-11.3-8H6.2C9.5 38.9 16.2 44 24 44z" />
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.7l6.2 5.2C41.1 35.3 44 30 44 24c0-1.2-.1-2.3-.4-3.5z" />
+              </svg>
+              Continue with Google
+            </span>
           </button>
 
           {/* Divider */}
@@ -201,31 +256,19 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
+              data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
               style={{
-                width: "100%",
-                padding: "14px 20px",
-                borderRadius: 12,
-                border: "none",
-                borderBottom: `4px solid ${theme.colors.greenDark}`,
-                background: theme.colors.green,
                 cursor: loading ? "not-allowed" : "pointer",
-                fontSize: 16,
-                fontWeight: 800,
-                color: "#fff",
-                ...signlearnoText,
+                opacity: loading ? 0.8 : 1,
                 marginTop: 4,
-                transition: "transform 140ms",
+                ...heroCtaBaseStyle,
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(2px)";
-                e.currentTarget.style.borderBottomWidth = "2px";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.borderBottomWidth = "4px";
-              }}
+              onMouseEnter={onHeroCtaMouseEnter}
+              onMouseLeave={onHeroCtaMouseLeave}
             >
-              {loading ? "Logging in..." : "Log in"}
+              <span data-cta-label style={ctaLabelLiftStyle}>
+                {loading ? "Logging in..." : "Log in"}
+              </span>
             </button>
             {error ? (
               <div style={{ ...signlearnoText, color: theme.colors.red, fontSize: 14, lineHeight: "20px" }}>
