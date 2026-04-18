@@ -258,10 +258,10 @@ export default function LoginPage() {
               disabled={loading}
               data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
               style={{
-                cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.8 : 1,
                 marginTop: 4,
                 ...heroCtaBaseStyle,
+                cursor: loading ? "not-allowed" : "pointer",
               }}
               onMouseEnter={onHeroCtaMouseEnter}
               onMouseLeave={onHeroCtaMouseLeave}
