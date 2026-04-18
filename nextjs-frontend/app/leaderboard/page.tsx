@@ -7,11 +7,17 @@ import { Trophy, Medal, Crown } from "lucide-react";
 import { getLeaderboardTop10, getMyRank } from "@/lib/api";
 import type { LeaderboardUser } from "@/lib/api/backend";
 
-const rankColors = [theme.colors.yellow, "#C0C0C0", "#CD7F32"];
+const rankColors = [theme.colors.yellow, "#8B9BB3", "#CD7F32"];
 const rankIcons = [Crown, Medal, Trophy];
+
+function getAvatarUrl(user: { name: string }): string {
+  const stableSeed = encodeURIComponent(user.name.trim().toLowerCase());
+  return `https://i.pravatar.cc/160?u=${stableSeed}`;
+}
 
 export default function LeaderboardPage() {
   type RankedUser = {
+    id: string;
     rank: number;
     name: string;
     xp: number;
@@ -46,6 +52,7 @@ export default function LeaderboardPage() {
   const rankedUsers = useMemo<RankedUser[]>(
     () =>
       users.map((user, index) => ({
+        id: user._id,
         rank: index + 1,
         name: user.username,
         xp: user.score,
@@ -64,17 +71,7 @@ export default function LeaderboardPage() {
   return (
     <>
       <main style={{ minHeight: "100vh", paddingTop: 90, background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 80px" }}>
-          {/* Hero */}
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>🏆</div>
-            <h1 style={{ ...signlearnoText, fontSize: 32, fontWeight: 900, color: theme.colors.textStrong, margin: 0 }}>
-              Leaderboard
-            </h1>
-            <p style={{ ...signlearnoText, fontSize: 16, color: theme.colors.textMuted, marginTop: 8 }}>
-              Top learners this week — keep your streak alive!
-            </p>
-          </div>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 24px 80px" }}>
           {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading leaderboard...</p> : null}
           {error ? <p style={{ ...signlearnoText, color: theme.colors.red }}>{error}</p> : null}
 
@@ -85,10 +82,56 @@ export default function LeaderboardPage() {
               const height = [120, 148, 100][i];
               const color = rankColors[podiumOrder[i]];
               const Icon = rankIcons[podiumOrder[i]];
+              const avatarUrl = getAvatarUrl(user);
               return (
-                <div key={user.rank} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                  <div style={{ fontSize: 32 }}>👤</div>
-                  <div style={{ ...signlearnoText, fontWeight: 700, fontSize: 14, color: theme.colors.textStrong }}>{user.name}</div>
+                <div key={user.rank} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, overflow: "visible" }}>
+                  <div
+                    style={{
+                      ...signlearnoText,
+                      fontSize: 12,
+                      fontWeight: 900,
+                      color: "#fff",
+                      background: color,
+                      borderRadius: 999,
+                      padding: "4px 10px",
+                      border: "2px solid rgba(0, 0, 0, 0.08)",
+                    }}
+                  >
+                    #{user.rank}
+                  </div>
+                  <div
+                    style={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: "50%",
+                      border: `4px solid ${color}`,
+                      background: "#fff",
+                      overflow: "hidden",
+                      marginBottom: 6,
+                      boxShadow: "0 8px 18px rgba(0,0,0,0.14)",
+                      zIndex: 2,
+                    }}
+                  >
+                    <img
+                      src={avatarUrl}
+                      alt={`${user.name} avatar`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      ...signlearnoText,
+                      fontWeight: 900,
+                      fontSize: 16,
+                      color: user.rank === 1 ? theme.colors.textStrong : color,
+                      background: user.rank === 1 ? "rgba(255, 200, 0, 0.18)" : "rgba(255, 255, 255, 0.8)",
+                      borderRadius: 999,
+                      padding: "4px 12px",
+                      border: `2px solid ${user.rank === 1 ? theme.colors.yellow : color}`,
+                    }}
+                  >
+                    {user.name}
+                  </div>
                   <div style={{ ...signlearnoText, fontSize: 13, color: theme.colors.textMuted }}>{user.xp.toLocaleString()} XP</div>
                   <div
                     style={{
@@ -114,6 +157,7 @@ export default function LeaderboardPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {rankedUsers.map((user) => {
               const isTop3 = user.rank <= 3;
+              const avatarUrl = getAvatarUrl(user);
               return (
                 <div
                   key={user.rank}
@@ -123,19 +167,56 @@ export default function LeaderboardPage() {
                     gap: 16,
                     padding: "14px 20px",
                     borderRadius: theme.radius.card,
-                    background: user.isMe ? theme.colors.greenSoft : theme.colors.surface,
-                    border: `2px solid ${user.isMe ? theme.colors.green : theme.colors.border}`,
-                    borderBottom: `4px solid ${user.isMe ? theme.colors.greenDark : theme.colors.border}`,
+                    background: isTop3 ? "rgba(255, 255, 255, 0.92)" : user.isMe ? theme.colors.greenSoft : theme.colors.surface,
+                    border: `2px solid ${isTop3 ? rankColors[user.rank - 1] : user.isMe ? theme.colors.green : theme.colors.border}`,
+                    borderBottom: `4px solid ${isTop3 ? rankColors[user.rank - 1] : user.isMe ? theme.colors.greenDark : theme.colors.border}`,
                   }}
                 >
                   {/* Rank */}
-                  <div style={{ width: 32, textAlign: "center", ...signlearnoText, fontWeight: 800, fontSize: 18, color: isTop3 ? rankColors[user.rank - 1] : theme.colors.textMuted }}>
+                  <div
+                    style={{
+                      minWidth: 44,
+                      textAlign: "center",
+                      ...signlearnoText,
+                      fontWeight: 900,
+                      fontSize: 16,
+                      color: isTop3 ? "#fff" : theme.colors.textMuted,
+                      background: isTop3 ? rankColors[user.rank - 1] : "transparent",
+                      borderRadius: 999,
+                      padding: isTop3 ? "4px 8px" : "0",
+                    }}
+                  >
                     {user.rank}
                   </div>
                   {/* Avatar */}
-                  <div style={{ fontSize: 26 }}>👤</div>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      border: `3px solid ${isTop3 ? rankColors[user.rank - 1] : theme.colors.border}`,
+                      background: "#fff",
+                      overflow: "hidden",
+                      marginLeft: -6,
+                      boxShadow: "0 6px 12px rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <img
+                      src={avatarUrl}
+                      alt={`${user.name} avatar`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  </div>
                   {/* Name */}
-                  <div style={{ flex: 1, ...signlearnoText, fontWeight: 700, fontSize: 16, color: theme.colors.textStrong }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      ...signlearnoText,
+                      fontWeight: isTop3 ? 900 : 700,
+                      fontSize: isTop3 ? 18 : 16,
+                      color: isTop3 ? rankColors[user.rank - 1] : theme.colors.textStrong,
+                    }}
+                  >
                     {user.name}
                     {user.isMe && (
                       <span style={{ marginLeft: 8, ...signlearnoUpperLabel, color: theme.colors.green, background: theme.colors.greenSoft, padding: "2px 8px", borderRadius: 20 }}>YOU</span>

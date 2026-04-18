@@ -43,7 +43,7 @@ export default function DictionaryPage() {
         style={{
           minHeight: "100vh",
           paddingTop: 88,
-          background: "linear-gradient(180deg, #f7fff0 0%, #ffffff 45%, #fffdf4 100%)",
+          background: theme.colors.surface,
         }}
       >
         <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">

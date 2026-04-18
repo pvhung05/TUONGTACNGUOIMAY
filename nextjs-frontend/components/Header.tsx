@@ -3,7 +3,25 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
-import { Flame, LogOut, Menu, X } from "lucide-react";
+import {
+  BookOpen,
+  Captions,
+  ChevronDown,
+  ClipboardCheck,
+  Flame,
+  GraduationCap,
+  Hand,
+  Home,
+  Languages,
+  LayoutDashboard,
+  Library,
+  LogOut,
+  Menu,
+  Search,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -16,7 +34,6 @@ const baseNavigation = [
   { name: "Learn", href: "/learn", icon: "learn" },
   { name: "Leaderboard", href: "/leaderboard", icon: "leaderboard" },
   { name: "Dictionary", href: "/dictionary", icon: "dictionary" },
-  { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
 ];
 
 export function Header() {
@@ -29,12 +46,16 @@ export function Header() {
   const [mobileLearnOpen, setMobileLearnOpen] = useState(false);
   const [dictionaryDropdownOpen, setDictionaryDropdownOpen] = useState(false);
   const [mobileDictionaryOpen, setMobileDictionaryOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileUserOpen, setMobileUserOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [role, setRole] = useState<"user" | "admin" | null>(null);
   const [streak, setStreak] = useState<number>(0);
+  const userDropdownRef = useRef<HTMLDivElement | null>(null);
   const translatorCloseTimer = useRef<number | null>(null);
   const learnCloseTimer = useRef<number | null>(null);
   const dictionaryCloseTimer = useRef<number | null>(null);
+  const userCloseTimer = useRef<number | null>(null);
 
   const navItemStyle = {
     height: 42,
@@ -90,16 +111,31 @@ export function Header() {
   };
 
   const navigation = useMemo(() => {
-    const coreNavigation = username
-      ? baseNavigation
-      : baseNavigation.filter((item) => item.name !== "Dashboard");
-
     if (role === "admin") {
-      return [...coreNavigation, { name: "User", href: "/users", icon: "users" }];
+      return [...baseNavigation, { name: "User", href: "/users", icon: "users" }];
     }
 
-    return coreNavigation;
-  }, [role, username]);
+    return baseNavigation;
+  }, [role]);
+
+  const getNavIcon = (icon: string, size = 16) => {
+    switch (icon) {
+      case "home":
+        return <Home size={size} />;
+      case "translator":
+        return <Languages size={size} />;
+      case "learn":
+        return <GraduationCap size={size} />;
+      case "leaderboard":
+        return <Trophy size={size} />;
+      case "dictionary":
+        return <Library size={size} />;
+      case "users":
+        return <Users size={size} />;
+      default:
+        return null;
+    }
+  };
 
   const clearTimer = (timerRef: MutableRefObject<number | null>) => {
     if (timerRef.current !== null) {
@@ -142,14 +178,36 @@ export function Header() {
     void loadProfile();
   }, []);
 
+  useEffect(() => {
+    const closeOnOutside = (event: globalThis.MouseEvent) => {
+      if (!userDropdownRef.current) return;
+      const target = event.target as Node | null;
+      if (target && userDropdownRef.current.contains(target)) return;
+      setUserDropdownOpen(false);
+    };
+
+    document.addEventListener("mousedown", closeOnOutside);
+    return () => document.removeEventListener("mousedown", closeOnOutside);
+  }, []);
+
+  useEffect(() => {
+    setUserDropdownOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     clearStoredToken();
     setUsername(null);
     setRole(null);
     setStreak(0);
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
+    setMobileUserOpen(false);
     router.push("/login");
   };
+
+  const userAvatarSrc = username
+    ? `https://i.pravatar.cc/80?u=${encodeURIComponent(username.trim().toLowerCase())}`
+    : "";
 
   return (
     <header
@@ -232,8 +290,9 @@ export function Header() {
                     onMouseEnter={onTopNavItemEnter}
                     onMouseLeave={onTopNavItemLeave}
                   >
-                    <span data-nav-label style={navLabelLiftStyle}>
-                      {item.name}
+                    <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {getNavIcon(item.icon, 18)}
+                      <span>{item.name}</span>
                     </span>
                     </div>
                   </Link>
@@ -271,8 +330,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Sign to Text
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Hand size={17} />
+                            <span>Sign to Text</span>
                           </span>
                         </div>
                       </Link>
@@ -293,8 +353,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Text to Sign
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Captions size={17} />
+                            <span>Text to Sign</span>
                           </span>
                         </div>
                       </Link>
@@ -329,8 +390,9 @@ export function Header() {
                     onMouseEnter={onTopNavItemEnter}
                     onMouseLeave={onTopNavItemLeave}
                   >
-                    <span data-nav-label style={navLabelLiftStyle}>
-                      {item.name}
+                    <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {getNavIcon(item.icon, 18)}
+                      <span>{item.name}</span>
                     </span>
                     </div>
                   </Link>
@@ -368,8 +430,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Lesson
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <BookOpen size={17} />
+                            <span>Lesson</span>
                           </span>
                         </div>
                       </Link>
@@ -390,8 +453,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Practice
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <ClipboardCheck size={17} />
+                            <span>Practice</span>
                           </span>
                         </div>
                       </Link>
@@ -426,8 +490,9 @@ export function Header() {
                       onMouseEnter={onTopNavItemEnter}
                       onMouseLeave={onTopNavItemLeave}
                     >
-                      <span data-nav-label style={navLabelLiftStyle}>
-                        {item.name}
+                      <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        {getNavIcon(item.icon, 18)}
+                        <span>{item.name}</span>
                       </span>
                     </div>
                   </Link>
@@ -465,8 +530,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Sign Alphabet
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Hand size={17} />
+                            <span>Sign Alphabet</span>
                           </span>
                         </div>
                       </Link>
@@ -487,8 +553,9 @@ export function Header() {
                           onMouseEnter={onDropdownItemEnter}
                           onMouseLeave={onDropdownItemLeave}
                         >
-                          <span data-nav-label style={navLabelLiftStyle}>
-                            Word Search
+                          <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Search size={17} />
+                            <span>Word Search</span>
                           </span>
                         </div>
                       </Link>
@@ -517,8 +584,9 @@ export function Header() {
                   onMouseEnter={onTopNavItemEnter}
                   onMouseLeave={onTopNavItemLeave}
                 >
-                  <span data-nav-label style={navLabelLiftStyle}>
-                    {item.name}
+                  <span data-nav-label style={{ ...navLabelLiftStyle, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    {getNavIcon(item.icon, 18)}
+                    <span>{item.name}</span>
                   </span>
                 </div>
               </Link>
@@ -548,41 +616,130 @@ export function Header() {
           <ThemeToggle />
 
           {username ? (
-            <>
-              <div
+            <div
+              ref={userDropdownRef}
+              style={{ position: "relative" }}
+              onMouseEnter={() => openMenu(setUserDropdownOpen, userCloseTimer)}
+              onMouseLeave={() => closeMenuSoon(setUserDropdownOpen, userCloseTimer)}
+            >
+              <button
+                type="button"
+                onClick={() => setUserDropdownOpen((open) => !open)}
                 style={{
-                  padding: "8px 14px",
-                  borderRadius: 10,
-                  border: `2px solid ${theme.colors.border}`,
+                  padding: "2px 4px",
+                  borderRadius: 999,
+                  border: "none",
                   fontSize: 14,
                   fontWeight: 700,
                   color: theme.colors.textStrong,
-                  ...signlearnoText,
-                }}
-              >
-                {username}
-              </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
+                  background: "transparent",
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  padding: "8px 12px",
-                  borderRadius: 10,
-                  border: `2px solid ${theme.colors.border}`,
-                  background: theme.colors.surface,
-                  color: theme.colors.textStrong,
-                  cursor: "pointer",
-                  fontWeight: 700,
                   ...signlearnoText,
                 }}
               >
-                <LogOut size={16} />
-                Logout
+                <img
+                  src={userAvatarSrc}
+                  alt={`${username} avatar`}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    display: "block",
+                    border: `2px solid ${theme.colors.border}`,
+                  }}
+                />
+                <ChevronDown
+                  size={16}
+                  style={{
+                    transform: userDropdownOpen ? "rotate(180deg)" : "none",
+                    transition: "transform 180ms ease",
+                  }}
+                />
               </button>
-            </>
+              {userDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% - 2px)",
+                    right: 0,
+                    minWidth: 220,
+                    paddingTop: 6,
+                    borderRadius: 12,
+                    border: `2px solid ${theme.colors.border}`,
+                    background: theme.colors.surface,
+                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+                    overflow: "hidden",
+                    zIndex: 60,
+                  }}
+                  onMouseEnter={() => openMenu(setUserDropdownOpen, userCloseTimer)}
+                  onMouseLeave={() => closeMenuSoon(setUserDropdownOpen, userCloseTimer)}
+                >
+                  <Link href="/dashboard">
+                    <div
+                      data-active={pathname === "/dashboard"}
+                      style={{
+                        padding: "12px 18px",
+                        cursor: "pointer",
+                        color: pathname === "/dashboard" ? theme.colors.green : theme.colors.textMuted,
+                        fontSize: 14,
+                        fontWeight: 500,
+                        transition: "all 200ms ease",
+                        background: pathname === "/dashboard" ? theme.colors.greenSoft : "transparent",
+                        ...signlearnoText,
+                      }}
+                      onMouseEnter={onDropdownItemEnter}
+                      onMouseLeave={onDropdownItemLeave}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                        <LayoutDashboard size={16} />
+                        <span data-nav-label style={navLabelLiftStyle}>
+                          Dashboard
+                        </span>
+                      </span>
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "12px 18px",
+                      cursor: "pointer",
+                      border: "none",
+                      borderTop: `1px solid ${theme.colors.border}`,
+                      background: "transparent",
+                      color: theme.colors.red,
+                      transition: "all 200ms ease",
+                      ...signlearnoText,
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                    onMouseEnter={(event) => {
+                      const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+                      if (label) label.style.transform = "translateY(-2px)";
+                      event.currentTarget.style.filter = "brightness(0.97)";
+                    }}
+                    onMouseLeave={(event) => {
+                      const label = event.currentTarget.querySelector<HTMLElement>("[data-nav-label]");
+                      if (label) label.style.transform = "none";
+                      event.currentTarget.style.filter = "none";
+                    }}
+                  >
+                    <LogOut size={16} />
+                    <span data-nav-label style={navLabelLiftStyle}>
+                      Logout
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <div
               style={{
@@ -705,7 +862,11 @@ export function Header() {
                     }}
                     onClick={() => setMobileTranslatorOpen(!mobileTranslatorOpen)}
                   >
-                    {item.name} {mobileTranslatorOpen ? "▼" : "▶"}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {getNavIcon(item.icon, 15)}
+                      {item.name}
+                    </span>{" "}
+                    {mobileTranslatorOpen ? "▼" : "▶"}
                   </div>
                   {mobileTranslatorOpen && (
                     <>
@@ -725,7 +886,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Sign to Text
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Hand size={14} />
+                            Sign to Text
+                          </span>
                         </div>
                       </Link>
                       <Link href="/translator/texttosign">
@@ -744,7 +908,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Text to Sign
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Captions size={14} />
+                            Text to Sign
+                          </span>
                         </div>
                       </Link>
                     </>
@@ -768,7 +935,11 @@ export function Header() {
                     }}
                     onClick={() => setMobileLearnOpen(!mobileLearnOpen)}
                   >
-                    {item.name} {mobileLearnOpen ? "▼" : "▶"}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {getNavIcon(item.icon, 15)}
+                      {item.name}
+                    </span>{" "}
+                    {mobileLearnOpen ? "▼" : "▶"}
                   </div>
                   {mobileLearnOpen && (
                     <>
@@ -788,7 +959,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Lesson
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <BookOpen size={14} />
+                            Lesson
+                          </span>
                         </div>
                       </Link>
                       <Link href="/learn/practice">
@@ -807,7 +981,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Practice
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <ClipboardCheck size={14} />
+                            Practice
+                          </span>
                         </div>
                       </Link>
                     </>
@@ -831,7 +1008,11 @@ export function Header() {
                     }}
                     onClick={() => setMobileDictionaryOpen(!mobileDictionaryOpen)}
                   >
-                    {item.name} {mobileDictionaryOpen ? "▼" : "▶"}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {getNavIcon(item.icon, 15)}
+                      {item.name}
+                    </span>{" "}
+                    {mobileDictionaryOpen ? "▼" : "▶"}
                   </div>
                   {mobileDictionaryOpen && (
                     <>
@@ -851,7 +1032,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Sign Alphabet
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Hand size={14} />
+                            Sign Alphabet
+                          </span>
                         </div>
                       </Link>
                       <Link href="/dictionary/word-search">
@@ -870,7 +1054,10 @@ export function Header() {
                           }}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Word Search
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <Search size={14} />
+                            Word Search
+                          </span>
                         </div>
                       </Link>
                     </>
@@ -894,31 +1081,100 @@ export function Header() {
                   }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    {getNavIcon(item.icon, 15)}
+                    {item.name}
+                  </span>
                 </div>
               </Link>
             );
           })}
           {username ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                marginTop: 8,
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: `2px solid ${theme.colors.border}`,
-                background: theme.colors.surface,
-                color: theme.colors.textStrong,
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: "pointer",
-                textAlign: "left",
-                ...signlearnoText,
-              }}
-            >
-              {username} - Logout
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => setMobileUserOpen((open) => !open)}
+                style={{
+                  width: "100%",
+                  marginTop: 8,
+                  padding: "8px 10px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "transparent",
+                  color: theme.colors.textStrong,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  ...signlearnoText,
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                  <img
+                    src={userAvatarSrc}
+                    alt={`${username} avatar`}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      display: "block",
+                      border: `2px solid ${theme.colors.border}`,
+                    }}
+                  />
+                  {username}
+                </span>
+                <span>{mobileUserOpen ? "▼" : "▶"}</span>
+              </button>
+              {mobileUserOpen && (
+                <div style={{ marginTop: 8, marginLeft: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <Link href="/dashboard">
+                    <div
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 10,
+                        background: pathname === "/dashboard" ? theme.colors.greenSoft : "transparent",
+                        color: pathname === "/dashboard" ? theme.colors.green : theme.colors.textMuted,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        ...signlearnoText,
+                      }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <LayoutDashboard size={14} />
+                        Dashboard
+                      </span>
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      padding: "10px 16px",
+                      borderRadius: 10,
+                      border: "none",
+                      background: "transparent",
+                      color: theme.colors.red,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      ...signlearnoText,
+                    }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <LogOut size={14} />
+                      Logout
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link href="/login">

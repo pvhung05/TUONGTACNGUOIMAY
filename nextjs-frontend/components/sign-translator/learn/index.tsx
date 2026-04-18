@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { XpChestIllustration } from "@/components/signlearno/icons";
 import type { Unit } from "../types";
@@ -39,7 +39,7 @@ export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit:
           }}
         >
           <div style={{ ...signlearnoText, color: theme.colors.green, fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-            {unit.label || `LESSON ${index + 1}`}
+            {unit.title}
           </div>
           <div style={{ ...signlearnoText, color: theme.colors.textStrong, fontSize: 16, fontWeight: 500, lineHeight: "22px" }}>
             {unit.subtitle}
@@ -53,9 +53,36 @@ export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit:
   );
 }
 
-export function FlashcardView({ unit, onBack, onDone }: { unit: Unit; onBack: () => void; onDone: () => void }) {
+export function FlashcardView({
+  unit,
+  onBack,
+  onDone,
+  initialIndex = 0,
+  onProgressChange,
+}: {
+  unit: Unit;
+  onBack: () => void;
+  onDone: () => void;
+  initialIndex?: number;
+  onProgressChange?: (payload: { index: number; total: number; percent: number }) => void;
+}) {
   const cards = unit.flashcards ?? [];
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initialIndex);
+
+  useEffect(() => {
+    if (cards.length === 0) {
+      setIndex(0);
+      return;
+    }
+    const nextIndex = Math.min(Math.max(initialIndex, 0), cards.length - 1);
+    setIndex(nextIndex);
+  }, [initialIndex, cards.length, unit.id]);
+
+  useEffect(() => {
+    if (!onProgressChange || cards.length === 0) return;
+    const percent = Math.round(((index + 1) / cards.length) * 100);
+    onProgressChange({ index, total: cards.length, percent });
+  }, [index, cards.length, onProgressChange]);
 
   if (cards.length === 0) {
     return (

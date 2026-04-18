@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { Flame, TrendingUp, BookOpen, Target, Trophy } from "lucide-react";
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [history, setHistory] = useState<LearningHistoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(() => new Date());
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +31,27 @@ export default function DashboardPage() {
       }
     };
     void load();
+  }, []);
+
+  useEffect(() => {
+    let midnightTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleMidnightRefresh = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const delay = Math.max(1000, nextMidnight.getTime() - now.getTime() + 1000);
+
+      midnightTimer = setTimeout(() => {
+        setCurrentDate(new Date());
+        scheduleMidnightRefresh();
+      }, delay);
+    };
+
+    scheduleMidnightRefresh();
+
+    return () => {
+      if (midnightTimer) clearTimeout(midnightTimer);
+    };
   }, []);
 
   const stats = [
@@ -67,6 +89,46 @@ export default function DashboardPage() {
     },
   ];
 
+  const weeklyProgress = useMemo(() => {
+    const heights = [78, 72, 88, 98, 84, 104, 112];
+    const formatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+    const today = currentDate;
+
+    return heights.map((height, index) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - (heights.length - 1 - index));
+      return {
+        height,
+        label: index === heights.length - 1 ? "Today" : formatter.format(date),
+      };
+    });
+  }, [currentDate]);
+
+  const getActivityLabel = (item: LearningHistoryItem): string => {
+    if (typeof item.lessonId === "string") {
+      return `Completed activity: ${item.lessonId}`;
+    }
+
+    const title = item.lessonId.title;
+    if (item.lessonId.type === "practice") {
+      return `Completed practice: ${title}`;
+    }
+
+    return `Completed lesson: ${title}`;
+  };
+
+  const formatActivityDate = (value: string): string => {
+    const target = new Date(value);
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfTarget = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    const diffDays = Math.floor((startOfToday.getTime() - startOfTarget.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    return target.toLocaleDateString();
+  };
+
   return (
     <>
       <main style={{ minHeight: "100vh", background: theme.colors.surface, paddingTop: "70px" }}>
@@ -74,7 +136,10 @@ export default function DashboardPage() {
           style={{
             maxWidth: "100%",
             margin: "0",
-            padding: "20px 24px",
+            padding: "20px 24px 24px",
+            minHeight: "calc(100vh - 70px)",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {loading ? (
@@ -91,7 +156,7 @@ export default function DashboardPage() {
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
               gap: 20,
-              marginBottom: 48,
+              marginBottom: 18,
             }}
           >
             {stats.map((stat) => {
@@ -104,19 +169,11 @@ export default function DashboardPage() {
                     border: `2px solid ${theme.colors.border}`,
                     background: theme.colors.surface,
                     padding: 24,
+                    minHeight: 160,
                     display: "flex",
                     flexDirection: "column",
                     gap: 16,
                     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.04)",
-                    transition: "all 200ms ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.12)";
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.04)";
-                    e.currentTarget.style.transform = "none";
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -183,6 +240,11 @@ export default function DashboardPage() {
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: 20,
+              flex: 1,
+              minHeight: 0,
+              alignItems: "stretch",
+              gridAutoRows: "minmax(0, 1fr)",
+              paddingBottom: 20,
             }}
           >
             {/* Progress Chart */}
@@ -191,8 +253,12 @@ export default function DashboardPage() {
                 borderRadius: 20,
                 border: `2px solid ${theme.colors.border}`,
                 background: theme.colors.surface,
-                padding: 28,
+                padding: 18,
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.04)",
+                minHeight: 0,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <div
@@ -228,33 +294,28 @@ export default function DashboardPage() {
                   Weekly Progress
                 </h2>
               </div>
-
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(7, 1fr)",
-                  gap: 12,
+                  gap: 6,
+                  marginTop: "auto",
+                  alignItems: "end",
                 }}
               >
-                {["M", "Tu", "W", "Th", "F", "Sa", "Su"].map((day, idx) => {
-                  const height = [65, 55, 75, 85, 70, 95, 100];
+                {weeklyProgress.map((item) => {
                   return (
-                    <div key={day} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <div
-                        style={{
-                          width: "100%",
-                          height: `${height[idx]}px`,
-                          borderRadius: 12,
-                          background: `linear-gradient(180deg, ${theme.colors.green} 0%, ${theme.colors.greenSoft} 100%)`,
-                          transition: "all 200ms",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.opacity = "0.8";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.opacity = "1";
-                        }}
-                      />
+                    <div key={item.label} style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+                      <div style={{ width: "100%", height: 116, display: "flex", alignItems: "flex-end" }}>
+                        <div
+                          style={{
+                            width: "100%",
+                            height: `${item.height}px`,
+                            borderRadius: 12,
+                            background: `linear-gradient(180deg, ${theme.colors.greenSoft} 0%, ${theme.colors.green} 100%)`,
+                          }}
+                        />
+                      </div>
                       <div
                         style={{
                           textAlign: "center",
@@ -264,7 +325,7 @@ export default function DashboardPage() {
                           ...signlearnoText,
                         }}
                       >
-                        {day}
+                        {item.label}
                       </div>
                     </div>
                   );
@@ -278,8 +339,12 @@ export default function DashboardPage() {
                 borderRadius: 20,
                 border: `2px solid ${theme.colors.border}`,
                 background: theme.colors.surface,
-                padding: 28,
+                padding: 18,
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.04)",
+                minHeight: 0,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <h2
@@ -294,46 +359,36 @@ export default function DashboardPage() {
                 Recent Activity
               </h2>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {history.slice(0, 5).map((item, idx) => (
-                  <div key={item._id} style={{ paddingBottom: idx < history.length - 1 ? 16 : 0, borderBottom: idx < history.length - 1 ? `1px solid ${theme.colors.border}` : "none" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: 0, overflowY: "auto", paddingRight: 4 }}>
+                {history.slice(0, 4).map((item, idx, recentItems) => (
+                  <div
+                    key={item._id}
+                    style={{
+                      paddingBottom: idx < recentItems.length - 1 ? 16 : 0,
+                      borderBottom: idx < recentItems.length - 1 ? `1px solid ${theme.colors.border}` : "none",
+                    }}
+                  >
                     <div
                       style={{
-                        color: theme.colors.textMuted,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: 0.5,
-                        marginBottom: 8,
-                        ...signlearnoText,
-                      }}
-                    >
-                      {new Date(item.date).toLocaleDateString()}
-                    </div>
-                    <div
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: 10,
+                        padding: "10px 12px",
+                        borderRadius: 14,
                         background: theme.colors.greenSoft,
-                        color: theme.colors.green,
-                        fontSize: 13,
+                        color: theme.colors.textStrong,
+                        fontSize: 14,
                         fontWeight: 600,
-                        marginBottom: 6,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
                         ...signlearnoText,
                       }}
                     >
-                      ✓ {typeof item.lessonId === "string" ? item.lessonId : item.lessonId.title}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: 10,
-                        color: theme.colors.orange,
-                        fontSize: 13,
-                        fontWeight: 700,
-                        ...signlearnoText,
-                      }}
-                    >
-                      Completed
+                      <span>
+                        <span style={{ color: theme.colors.green, fontWeight: 800 }}>✓</span> {getActivityLabel(item)}
+                      </span>
+                      <span style={{ ...signlearnoText, color: theme.colors.textMuted, fontSize: 13, fontWeight: 600 }}>
+                        {formatActivityDate(item.date)}
+                      </span>
                     </div>
                   </div>
                 ))}
