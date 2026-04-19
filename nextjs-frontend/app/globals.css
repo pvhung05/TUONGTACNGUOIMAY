@@ -307,6 +307,22 @@
   }
 }
 
+@keyframes signlearno-cursor-ring-pulse-pointer {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--signlearno-green) 62%, transparent),
+      0 0 28px color-mix(in srgb, var(--signlearno-green) 48%, transparent),
+      0 4px 18px color-mix(in srgb, var(--signlearno-green) 38%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 16px color-mix(in srgb, var(--signlearno-green) 26%, transparent),
+      0 0 40px color-mix(in srgb, var(--signlearno-green) 42%, transparent),
+      0 8px 26px color-mix(in srgb, var(--signlearno-green) 36%, transparent);
+  }
+}
+
 .signlearno-cursor-ring {
   width: 32px;
   height: 32px;
@@ -364,16 +380,31 @@
 
 .signlearno-cursor-hand-svg {
   display: block;
+  color: var(--signlearno-green);
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--signlearno-green) 40%, transparent));
 }
 
 body[data-signlearno-cursor="pointer"] .signlearno-cursor-ring {
-  width: 42px;
-  height: 42px;
-  border-color: color-mix(in srgb, var(--signlearno-green) 88%, #ffffff);
+  width: 54px;
+  height: 54px;
+  border-width: 3px;
+  border-color: color-mix(in srgb, var(--signlearno-green) 92%, #ffffff);
+  background: color-mix(in srgb, var(--signlearno-green-soft) 88%, transparent);
+  animation: signlearno-cursor-ring-pulse-pointer 1.35s ease-in-out infinite;
 }
 
 body[data-signlearno-cursor="pointer"] .signlearno-cursor-hand-stack {
-  transform: scale(1.14);
+  transform: scale(1.32);
+}
+
+body[data-signlearno-cursor="pointer"] .signlearno-cursor-hand-inner {
+  animation-duration: 0.75s;
+}
+
+body[data-signlearno-cursor="pointer"] .signlearno-cursor-hand-svg {
+  filter:
+    drop-shadow(0 4px 10px color-mix(in srgb, var(--signlearno-green) 65%, transparent))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--signlearno-green) 55%, transparent));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -382,6 +413,10 @@ body[data-signlearno-cursor="pointer"] .signlearno-cursor-hand-stack {
   }
 
   .signlearno-cursor-hand-inner {
+    animation: none;
+  }
+
+  body[data-signlearno-cursor="pointer"] .signlearno-cursor-ring {
     animation: none;
   }
 }

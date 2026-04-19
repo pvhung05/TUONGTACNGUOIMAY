@@ -184,7 +184,7 @@ export default function LessonPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "100px 24px 80px" }}>
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading lessons...</p> : null}
       {statusMessage ? (
         <p style={{ ...signlearnoText, color: statusMessage.startsWith("Completed") ? theme.colors.green : theme.colors.red }}>

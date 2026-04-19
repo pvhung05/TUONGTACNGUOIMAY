@@ -125,17 +125,7 @@ export function SignlearnoCursor() {
       >
         <div className="signlearno-cursor-hand-stack">
           <span className="signlearno-cursor-hand-inner">
-            <Hand
-              className="signlearno-cursor-hand-svg"
-              size={30}
-              strokeWidth={2.35}
-              aria-hidden
-              style={{
-                color: "var(--signlearno-green)",
-                filter:
-                  "drop-shadow(0 2px 4px color-mix(in srgb, var(--signlearno-green) 35%, transparent))",
-              }}
-            />
+            <Hand className="signlearno-cursor-hand-svg" size={32} strokeWidth={2.45} aria-hidden />
           </span>
         </div>
       </div>
