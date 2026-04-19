@@ -155,6 +155,7 @@ function isDirectVideoUrl(url: string): boolean {
 
 export default function SignAlphabetPage() {
   const [signSet, setSignSet] = useState<SignSet>("letters");
+  const [hoveredSignSet, setHoveredSignSet] = useState<SignSet | null>(null);
   const [selectedSymbol, setSelectedSymbol] = useState("A");
   const [words, setWords] = useState<SignVideoItem[]>([]);
   const [selectedWord, setSelectedWord] = useState<SignVideoItem | null>(null);
@@ -240,30 +241,11 @@ export default function SignAlphabetPage() {
         style={{
           minHeight: "100vh",
           paddingTop: 88,
-          background: "linear-gradient(180deg, #f7fff0 0%, #ffffff 45%, #fffdf4 100%)",
+          background: theme.colors.surface,
         }}
       >
         <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <section
-            className="rounded-3xl border-2 p-6 sm:p-8"
-            style={{
-              background: `linear-gradient(145deg, ${duolingo.surface} 0%, ${duolingo.blush} 100%)`,
-              borderColor: duolingo.line,
-              boxShadow: "0 12px 0 rgba(0,0,0,0.08)",
-            }}
-          >
-            <p className="text-xs font-extrabold uppercase tracking-[0.24em]" style={{ color: duolingo.blue }}>
-              Sign Dictionary
-            </p>
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl" style={{ color: duolingo.ink }}>
-              Sign Alphabet
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm sm:text-base" style={{ color: duolingo.softInk }}>
-              Pick a letter or number and explore the related sign language videos.
-            </p>
-          </section>
-
-          <section className="mt-6 rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
+          <section className="rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-xl font-black" style={{ color: duolingo.ink }}>
@@ -274,15 +256,21 @@ export default function SignAlphabetPage() {
                 </p>
               </div>
 
-              <div className="inline-flex rounded-2xl border-2 p-1" style={{ borderColor: duolingo.line, background: duolingo.mint }}>
+              <div className="inline-flex rounded-2xl p-1" style={{ background: duolingo.mint }}>
                 <button
                   type="button"
                   onClick={() => {
                     setSignSet("letters");
                     setSelectedSymbol("A");
                   }}
-                  className="rounded-xl px-4 py-2 text-sm font-extrabold"
-                  style={{ background: signSet === "letters" ? duolingo.yellow : "transparent", color: duolingo.ink }}
+                  onMouseEnter={() => setHoveredSignSet("letters")}
+                  onMouseLeave={() => setHoveredSignSet(null)}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold"
+                  style={{
+                    background: signSet === "letters" ? duolingo.green : "transparent",
+                    color: signSet === "letters" ? "#fff" : hoveredSignSet === "letters" ? duolingo.green : duolingo.ink,
+                    transition: "color 180ms ease",
+                  }}
                 >
                   LETTER SIGNS
                 </button>
@@ -292,8 +280,14 @@ export default function SignAlphabetPage() {
                     setSignSet("numbers");
                     setSelectedSymbol("1");
                   }}
-                  className="rounded-xl px-4 py-2 text-sm font-extrabold"
-                  style={{ background: signSet === "numbers" ? duolingo.yellow : "transparent", color: duolingo.ink }}
+                  onMouseEnter={() => setHoveredSignSet("numbers")}
+                  onMouseLeave={() => setHoveredSignSet(null)}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold"
+                  style={{
+                    background: signSet === "numbers" ? duolingo.green : "transparent",
+                    color: signSet === "numbers" ? "#fff" : hoveredSignSet === "numbers" ? duolingo.green : duolingo.ink,
+                    transition: "color 180ms ease",
+                  }}
                 >
                   NUMBER SIGNS
                 </button>
@@ -309,26 +303,56 @@ export default function SignAlphabetPage() {
                     key={symbol}
                     type="button"
                     onClick={() => setSelectedSymbol(symbol)}
-                    className="aspect-square overflow-hidden rounded-2xl border-2 text-lg font-black transition"
+                    className="aspect-square overflow-hidden rounded-2xl border-2 transition"
                     style={{
                       borderColor: active ? duolingo.greenDark : duolingo.line,
                       background: active ? duolingo.green : "#fff",
-                      color: active ? "#fff" : duolingo.ink,
                       boxShadow: active ? "0 6px 0 #3d9602" : "0 4px 0 #e2e2e2",
+                      transform: "translateY(0)",
+                      filter: "none",
+                      transition: "transform 180ms ease, box-shadow 180ms ease, filter 180ms ease",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.transform = "translateY(-4px) scale(1.02)";
+                      event.currentTarget.style.boxShadow = active ? "0 10px 0 #3d9602" : "0 10px 0 #d8d8d8";
+                      event.currentTarget.style.filter = "brightness(1.04)";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.transform = "translateY(0) scale(1)";
+                      event.currentTarget.style.boxShadow = active ? "0 6px 0 #3d9602" : "0 4px 0 #e2e2e2";
+                      event.currentTarget.style.filter = "none";
                     }}
                     aria-label={`Select sign ${symbol}`}
                   >
-                    {mediaSrc ? (
-                      <img
-                        src={mediaSrc}
-                        alt={`${symbol} sign`}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                      />
-                    ) : (
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                    <span style={{ display: "flex", flexDirection: "column", width: "100%", height: "100%" }}>
+                      <span style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#fff" }}>
+                        {mediaSrc ? (
+                          <img
+                            src={mediaSrc}
+                            alt={`${symbol} sign`}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: 22, fontWeight: 800, color: duolingo.ink }}>{symbol}</span>
+                        )}
+                      </span>
+                      <span
+                        style={{
+                          height: 28,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 14,
+                          fontWeight: 800,
+                          background: active ? duolingo.greenDark : "#f7f7f7",
+                          color: active ? "#fff" : duolingo.ink,
+                          borderTop: `1px solid ${active ? duolingo.greenDark : duolingo.line}`,
+                          ...signlearnoText,
+                        }}
+                      >
                         {symbol}
                       </span>
-                    )}
+                    </span>
                   </button>
                 );
               })}

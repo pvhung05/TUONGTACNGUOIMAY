@@ -115,30 +115,11 @@ export default function WordSearchPage() {
         style={{
           minHeight: "100vh",
           paddingTop: 88,
-          background: "linear-gradient(180deg, #f7fff0 0%, #ffffff 45%, #fffdf4 100%)",
+          background: theme.colors.surface,
         }}
       >
         <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <section
-            className="rounded-3xl border-2 p-6 sm:p-8"
-            style={{
-              background: `linear-gradient(145deg, ${duolingo.surface} 0%, ${duolingo.blush} 100%)`,
-              borderColor: duolingo.line,
-              boxShadow: "0 12px 0 rgba(0,0,0,0.08)",
-            }}
-          >
-            <p className="text-xs font-extrabold uppercase tracking-[0.24em]" style={{ color: duolingo.blue }}>
-              Sign Dictionary
-            </p>
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl" style={{ color: duolingo.ink }}>
-              Word Search
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm sm:text-base" style={{ color: duolingo.softInk }}>
-              Type a word or phrase to discover related sign videos and explore each result.
-            </p>
-          </section>
-
-          <section className="mt-6 rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
+          <section className="rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
             <h2 className="text-xl font-black" style={{ color: duolingo.ink }}>
               Search by word
             </h2>

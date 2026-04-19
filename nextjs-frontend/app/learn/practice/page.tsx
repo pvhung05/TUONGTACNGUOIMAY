@@ -1,22 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
-import { completeLesson, getLearningHistory, getLessonById, getLessons } from "@/lib/api";
+import { completeLesson, getLearningHistory, getLessonById, getLessons, getStoredToken } from "@/lib/api";
 import type { Lesson } from "@/lib/api/backend";
-import { UnitsGrid } from "@/components/sign-translator/learn";
-import type { Unit } from "@/components/sign-translator/types";
 
 export default function PracticePage() {
+  const storedToken = getStoredToken();
+  const PRACTICE_PROGRESS_STORAGE_KEY = `practice_progress_v1:${storedToken ?? "guest"}`;
   const [practices, setPractices] = useState<Lesson[]>([]);
   const [selectedPractice, setSelectedPractice] = useState<Lesson | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [answers, setAnswers] = useState<Record<number, "A" | "B" | "C" | "D">>({});
   const [completedPracticeIds, setCompletedPracticeIds] = useState<Record<string, boolean>>({});
+  const [practiceProgressById, setPracticeProgressById] = useState<Record<string, { index: number; total: number; percent: number }>>({});
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+
+  const loadStoredPracticeProgress = (): Record<string, { index: number; total: number; percent: number }> => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(PRACTICE_PROGRESS_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw) as Record<string, { index: number; total: number; percent: number }>;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const saveStoredPracticeProgress = (nextProgress: Record<string, { index: number; total: number; percent: number }>) => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PRACTICE_PROGRESS_STORAGE_KEY, JSON.stringify(nextProgress));
+  };
+
+  useEffect(() => {
+    setPracticeProgressById(loadStoredPracticeProgress());
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -43,22 +65,33 @@ export default function PracticePage() {
     void load();
   }, []);
 
-  const units: Unit[] = practices.map((practice) => ({
-    id: practice._id,
-    title: practice.title,
-    subtitle: practice.content || "Practice quiz",
-    label: "PRACTICE",
-    completed: !!completedPracticeIds[practice._id],
-    color: theme.colors.green,
-    levelsHeight: 1,
-    nodes: [],
-  }));
+  const practiceStyles = [
+    { bg: "linear-gradient(180deg, #D7F7C7 0%, #BEEFA7 100%)", emoji: "🦁🐘" },
+    { bg: "linear-gradient(180deg, #D8F3FF 0%, #BFEAFB 100%)", emoji: "👋" },
+    { bg: "linear-gradient(180deg, #FFF6C7 0%, #F7ECA7 100%)", emoji: "🔢" },
+    { bg: "linear-gradient(180deg, #FFE6C7 0%, #FFD7A7 100%)", emoji: "☕⏰" },
+    { bg: "linear-gradient(180deg, #F1E2FF 0%, #E6CCFF 100%)", emoji: "😀😯" },
+  ];
+
+  const orderedPractices = useMemo(
+    () => [...practices].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)),
+    [practices],
+  );
+
+  const practiceIsFinished = (practiceId: string) => {
+    if (completedPracticeIds[practiceId]) return true;
+    const p = practiceProgressById[practiceId]?.percent ?? 0;
+    return p >= 100;
+  };
 
   const openPractice = async (practiceId: string) => {
     try {
       const detail = await getLessonById(practiceId);
       setSelectedPractice(detail);
-      setQuestionIndex(0);
+      const stored = practiceProgressById[practiceId];
+      const questionsCount = Array.isArray(detail.practiceQuestions) ? detail.practiceQuestions.length : 0;
+      const safeIndex = questionsCount > 0 ? Math.min(Math.max(stored?.index ?? 0, 0), questionsCount - 1) : 0;
+      setQuestionIndex(safeIndex);
       setSelectedOption(null);
       setAnswers({});
       setStatusMessage(null);
@@ -70,6 +103,29 @@ export default function PracticePage() {
   const questions = selectedPractice?.practiceQuestions ?? [];
   const currentQuestion = questions[questionIndex];
   const isLast = questions.length > 0 && questionIndex === questions.length - 1;
+
+  useEffect(() => {
+    if (!selectedPractice || questions.length === 0) return;
+    const nextPayload = {
+      index: questionIndex,
+      total: questions.length,
+      percent: Math.round(((questionIndex + 1) / questions.length) * 100),
+    };
+    setPracticeProgressById((current) => {
+      const previous = current[selectedPractice._id];
+      if (
+        previous &&
+        previous.index === nextPayload.index &&
+        previous.total === nextPayload.total &&
+        previous.percent === nextPayload.percent
+      ) {
+        return current;
+      }
+      const next = { ...current, [selectedPractice._id]: nextPayload };
+      saveStoredPracticeProgress(next);
+      return next;
+    });
+  }, [selectedPractice, questionIndex, questions.length]);
 
   const goPrev = () => {
     if (questionIndex === 0) return;
@@ -92,7 +148,8 @@ export default function PracticePage() {
     }
 
     if (completedPracticeIds[selectedPractice._id]) {
-      setStatusMessage("Practice already completed.");
+      setStatusMessage(null);
+      setSelectedPractice(null);
       return;
     }
 
@@ -103,7 +160,16 @@ export default function PracticePage() {
         return updatedAnswers[idx] === question.correct ? acc + 1 : acc;
       }, 0);
       setCompletedPracticeIds((current) => ({ ...current, [selectedPractice._id]: true }));
-      setStatusMessage(`Done! ${correctCount}/${questions.length} correct, +${selectedPractice.scoreReward} XP`);
+      setPracticeProgressById((current) => {
+        const total = questions.length || current[selectedPractice._id]?.total || 1;
+        const next = {
+          ...current,
+          [selectedPractice._id]: { index: Math.max(0, total - 1), total: Math.max(1, total), percent: 100 },
+        };
+        saveStoredPracticeProgress(next);
+        return next;
+      });
+      setStatusMessage(null);
       setSelectedPractice(null);
     } catch (nextError) {
       setStatusMessage(nextError instanceof Error ? nextError.message : "Failed to submit practice.");
@@ -114,7 +180,6 @@ export default function PracticePage() {
 
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "30px 24px 80px" }}>
-      <h1 style={{ ...signlearnoText, fontSize: 34, fontWeight: 800, color: theme.colors.textStrong }}>Practice</h1>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
         <p style={{ ...signlearnoText, color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red }}>
@@ -205,14 +270,90 @@ export default function PracticePage() {
           </div>
         </div>
       ) : (
-        <div style={{ marginTop: 24 }}>
-          <UnitsGrid
-            units={units}
-            onSelect={(unit) => {
-              if (!unit.id) return;
-              void openPractice(unit.id);
-            }}
-          />
+        <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+          {orderedPractices.map((practice, index) => {
+            const card = practiceStyles[index % practiceStyles.length];
+            const finished = practiceIsFinished(practice._id);
+            const practiceProgress = practiceProgressById[practice._id];
+            const percentForPractice = finished ? 100 : practiceProgress?.percent ?? 0;
+            const visiblePercentForPractice = percentForPractice <= 0 ? 0 : Math.max(percentForPractice, 8);
+
+            return (
+              <button
+                key={practice._id}
+                type="button"
+                onClick={() => void openPractice(practice._id)}
+                style={{
+                  borderRadius: 16,
+                  border: `2px solid ${theme.colors.border}`,
+                  background: card.bg,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  padding: "12px 12px 14px",
+                  gap: 8,
+                  height: 250,
+                  width: "100%",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  transition: "transform 220ms ease, box-shadow 220ms ease, filter 220ms ease",
+                  boxShadow: "0 4px 0 rgba(0, 0, 0, 0.12)",
+                }}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.transform = "translateY(-3px)";
+                  event.currentTarget.style.boxShadow = "0 10px 0 rgba(0, 0, 0, 0.16)";
+                  event.currentTarget.style.filter = "brightness(1.01)";
+                }}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.transform = "translateY(0)";
+                  event.currentTarget.style.boxShadow = "0 4px 0 rgba(0, 0, 0, 0.12)";
+                  event.currentTarget.style.filter = "none";
+                }}
+              >
+                <div style={{ ...signlearnoText, color: "#111", fontSize: 32, lineHeight: 1, height: 34 }}>{card.emoji}</div>
+                <div
+                  style={{
+                    ...signlearnoText,
+                    color: "#111",
+                    fontSize: 30,
+                    fontWeight: 800,
+                    lineHeight: "32px",
+                    minHeight: 64,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {practice.title}
+                </div>
+                <div
+                  style={{
+                    ...signlearnoText,
+                    color: "#2F2F2F",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    lineHeight: "20px",
+                    minHeight: 40,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {practice.content || "Practice with interactive sign language quizzes."}
+                </div>
+                <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 2 }}>
+                  <div style={{ width: "100%", height: 28, borderRadius: 999, background: "#fff", border: `1.5px solid ${theme.colors.border}`, overflow: "hidden" }}>
+                    <div style={{ width: `${visiblePercentForPractice}%`, height: "100%", minWidth: percentForPractice > 0 ? 8 : 0, borderRadius: 999, background: "linear-gradient(180deg, #7BEA2D 0%, #58CC02 100%)" }} />
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 800, ...signlearnoText }}>
+                    <span style={{ color: theme.colors.textStrong }}>{percentForPractice}% Completed</span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

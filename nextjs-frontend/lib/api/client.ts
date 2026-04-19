@@ -18,6 +18,17 @@ export function getApiBaseUrl(): string {
   return baseUrl.replace(/\/+$/, "");
 }
 
+/**
+ * FastAPI: `/v1/action-detection/*` (sign-to-text, text-to-sign). Default uvicorn :8001.
+ */
+export function getMlApiBaseUrl(): string {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_ML_API_BASE_URL ||
+    process.env.ML_API_BASE_URL ||
+    "http://localhost:8001";
+  return baseUrl.replace(/\/+$/, "");
+}
+
 // Initialize on module load
 initializeApiClient();
 
