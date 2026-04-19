@@ -191,8 +191,22 @@ export default function PracticePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
+              type="button"
               onClick={() => setSelectedPractice(null)}
-              style={{ padding: "8px 18px", background: "transparent", border: `2px solid ${theme.colors.border}`, borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 14, color: theme.colors.textStrong, ...signlearnoText }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 10,
+                border: `2px solid ${theme.colors.border}`,
+                background: theme.colors.surface,
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: 13,
+                color: theme.colors.textStrong,
+                ...signlearnoText,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+              }}
             >
               ← Back
             </button>

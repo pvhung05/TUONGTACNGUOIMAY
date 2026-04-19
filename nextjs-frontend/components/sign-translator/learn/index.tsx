@@ -107,7 +107,22 @@ export function FlashcardView({
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <button
           onClick={onBack}
-          style={{ padding: "8px 18px", background: "transparent", border: `2px solid ${theme.colors.border}`, borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 14, color: theme.colors.textStrong, ...signlearnoText, display: "flex", alignItems: "center", gap: 6 }}
+          type="button"
+          style={{
+            padding: "8px 16px",
+            borderRadius: 10,
+            border: `2px solid ${theme.colors.border}`,
+            background: theme.colors.surface,
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: 13,
+            color: theme.colors.textStrong,
+            ...signlearnoText,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            transition: "opacity 140ms",
+          }}
         >
           ← Back
         </button>
@@ -120,31 +135,49 @@ export function FlashcardView({
         <div style={{ width: `${((index + 1) / cards.length) * 100}%`, height: 8, borderRadius: 4, background: theme.colors.green, transition: "width 300ms ease" }} />
       </div>
 
-      {/* Flashcard body */}
-      <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 360 }}>
-        {/* Left: Word */}
-        <div style={{ flex: 1, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, borderBottom: `6px solid ${theme.colors.border}`, background: theme.colors.surface, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
-          <div style={{ ...signlearnoUpperLabel, color: theme.colors.textMuted, marginBottom: 16, letterSpacing: 2 }}>SIGN LANGUAGE</div>
+      {/* Flashcard body — một vỏ bo góc, hai cột dính nhau (giống Text to Sign / Sign to Text) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          alignItems: "stretch",
+          minHeight: 360,
+          borderRadius: 30,
+          overflow: "hidden",
+          border: `2px solid ${theme.colors.border}`,
+          background: theme.colors.surface,
+          boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 40,
+            textAlign: "center",
+            borderRight: `2px solid ${theme.colors.border}`,
+            boxSizing: "border-box",
+            minHeight: 280,
+          }}
+        >
           <div style={{ ...signlearnoText, fontSize: 56, fontWeight: 900, color: theme.colors.green, lineHeight: 1, marginBottom: 16 }}>
             {card.word}
           </div>
-          {card.description && (
+          {card.description ? (
             <div style={{ ...signlearnoText, fontSize: 16, color: theme.colors.textMuted, lineHeight: "24px" }}>
               {card.description}
             </div>
-          )}
+          ) : null}
         </div>
 
-        {/* Right: Video */}
         <div
           style={{
-            flex: 1,
-            borderRadius: theme.radius.card,
             overflow: "hidden",
             background: "#000",
             minHeight: 280,
-            border: `2px solid ${theme.colors.border}`,
-            position: "relative" // 👈 thêm
+            position: "relative",
           }}
         >
           <video
@@ -154,12 +187,12 @@ export function FlashcardView({
             loop
             controls
             style={{
-              position: "absolute", // 👈 QUAN TRỌNG
-              top: 0,
-              left: 0,
+              position: "absolute",
+              inset: 0,
               width: "100%",
               height: "100%",
-              objectFit: "cover" // 👈 fill full khung
+              objectFit: "cover",
+              display: "block",
             }}
           >
             <source src={card.videoUrl} type="video/mp4" />
