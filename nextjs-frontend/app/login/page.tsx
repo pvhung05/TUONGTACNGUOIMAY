@@ -77,7 +77,7 @@ export default function LoginPage() {
         display: "grid",
         gridTemplateColumns: "minmax(320px, 44vw) 1fr",
         fontFamily: theme.fontFamily,
-        background: `linear-gradient(135deg, ${theme.colors.greenSoft} 0%, rgba(28, 176, 246, 0.05) 100%)`,
+        background: "transparent",
         overflow: "hidden",
         position: "relative",
       }}

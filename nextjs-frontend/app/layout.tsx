@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ChatbotBubble } from "@/components/ChatbotBubble";
+import { SignlearnoCursor } from "@/components/SignlearnoCursor";
 import { AppShell } from "@/components/AppShell";
 
 const geistSans = localFont({
@@ -13,6 +15,13 @@ const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
+});
+
+const signlearnoSans = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-signlearno-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -39,8 +48,9 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#58cc02" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${signlearnoSans.variable} antialiased`}>
         <AppShell>{children}</AppShell>
+        <SignlearnoCursor />
         <ChatbotBubble />
       </body>
     </html>

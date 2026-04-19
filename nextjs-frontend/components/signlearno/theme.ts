@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 export const signlearnoTheme = {
   brandName: "signlearno",
-  fontFamily: "Inter, var(--font-geist-sans), sans-serif",
+  fontFamily: "var(--font-signlearno-sans), var(--font-geist-sans), sans-serif",
   colors: {
     surface: "var(--signlearno-surface)",
     canvas: "var(--signlearno-canvas)",

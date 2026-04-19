@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { Flame, TrendingUp, BookOpen, Target, Trophy } from "lucide-react";
 import { getDashboard, getLearningHistory, getProfile } from "@/lib/api";
@@ -131,7 +130,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", background: theme.colors.surface, paddingTop: "70px" }}>
+      <main style={{ minHeight: "100vh", background: "transparent", paddingTop: "70px" }}>
         <div
           style={{
             maxWidth: "100%",
@@ -400,7 +399,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

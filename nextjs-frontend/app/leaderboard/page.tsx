@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { Footer } from "@/components/Footer";
 import { Trophy, Medal, Crown } from "lucide-react";
 import { getLeaderboardTop10, getMyRank } from "@/lib/api";
 import type { LeaderboardUser } from "@/lib/api/backend";
@@ -70,7 +69,7 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: 90, background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
+      <main style={{ minHeight: "100vh", paddingTop: 90, background: "transparent", fontFamily: theme.fontFamily }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 24px 80px" }}>
           {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading leaderboard...</p> : null}
           {error ? <p style={{ ...signlearnoText, color: theme.colors.red }}>{error}</p> : null}
@@ -239,7 +238,6 @@ export default function LeaderboardPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

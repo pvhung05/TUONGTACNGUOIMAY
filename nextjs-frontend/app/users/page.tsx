@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Footer } from "@/components/Footer";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { getProfile, getUsers } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/backend";
@@ -39,7 +38,7 @@ export default function UsersPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", background: theme.colors.canvas, paddingTop: 90, fontFamily: theme.fontFamily }}>
+      <main style={{ minHeight: "100vh", background: "transparent", paddingTop: 90, fontFamily: theme.fontFamily }}>
         <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 64px" }}>
           <h1 style={{ ...signlearnoText, fontSize: 30, fontWeight: 900, color: theme.colors.textStrong, margin: "0 0 8px" }}>
             User Management
@@ -103,7 +102,6 @@ export default function UsersPage() {
           ) : null}
         </div>
       </main>
-      <Footer />
     </>
   );
 }

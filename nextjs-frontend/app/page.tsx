@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Footer } from "@/components/shared";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 import heroLogo from "@/components/Gemini_Generated_Image_7bvlng7bvlng7bvl (1).png";
@@ -49,7 +48,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section
           style={{
-            background: `linear-gradient(135deg, ${theme.colors.greenSoft} 0%, rgba(28, 176, 246, 0.05) 100%)`,
+            background: "transparent",
             padding: "80px 20px 120px",
             position: "relative",
             overflow: "hidden",
@@ -438,7 +437,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <Footer />
     </>
   );
 }

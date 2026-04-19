@@ -30,7 +30,7 @@ export function SignTranslatorDemo({ translatorMode }: { translatorMode?: "textT
     </div>
   ) : (
     // Learn mode - full interface with sidebar
-    <main style={{ minHeight: "100vh", background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
+    <main style={{ minHeight: "100vh", background: "transparent", fontFamily: theme.fontFamily }}>
       <div style={{ maxWidth: 1440, margin: "0 auto" }}>
         <div style={{ margin: "24px 24px 64px", display: "flex", gap: LAYOUT_GAP, alignItems: "flex-start", boxSizing: "border-box" }}>
           {activeNav === "learn" ? (

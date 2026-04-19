@@ -1,27 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Footer } from "@/components/Footer";
-import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
+import { Search } from "lucide-react";
+import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { getDictionaryEntries } from "@/lib/api";
 import type { TranslatorWord } from "@/lib/api/backend";
 
 type VideoItem = {
   title: string;
   url: string;
-};
-
-const duolingo = {
-  green: "#58CC02",
-  greenDark: "#46A302",
-  yellow: "#FFC800",
-  blue: "#1CB0F6",
-  ink: "#36454F",
-  softInk: "#6F7E88",
-  line: "#E7E7E7",
-  surface: "#FFFFFF",
-  blush: "#FFF9DE",
-  mint: "#E9F8DD",
 };
 
 function getWordLabel(word: TranslatorWord): string {
@@ -59,8 +46,21 @@ export default function WordSearchPage() {
   const [activeVideoUrl, setActiveVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [relatedWordsFilter, setRelatedWordsFilter] = useState("");
+
+  const videoSurfaceBg =
+    "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)";
 
   const selectedWordVideos = useMemo(() => getWordVideos(selectedWord), [selectedWord]);
+
+  const filteredRelatedWords = useMemo(() => {
+    const q = relatedWordsFilter.trim().toLowerCase();
+    if (!q) return words;
+    return words.filter((w) => {
+      const label = getWordLabel(w).toLowerCase();
+      return label.includes(q);
+    });
+  }, [words, relatedWordsFilter]);
 
   useEffect(() => {
     if (selectedWordVideos.length === 0) {
@@ -73,6 +73,22 @@ export default function WordSearchPage() {
       setActiveVideoUrl(selectedWordVideos[0].url);
     }
   }, [selectedWordVideos, activeVideoUrl]);
+
+  useEffect(() => {
+    const q = relatedWordsFilter.trim();
+    if (!q) return;
+    if (filteredRelatedWords.length === 0) {
+      setSelectedWord(null);
+      return;
+    }
+    if (!selectedWord || !filteredRelatedWords.some((w) => w._id === selectedWord._id)) {
+      setSelectedWord(filteredRelatedWords[0]);
+    }
+  }, [relatedWordsFilter, filteredRelatedWords, selectedWord]);
+
+  useEffect(() => {
+    setRelatedWordsFilter("");
+  }, [searchWord]);
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -112,169 +128,372 @@ export default function WordSearchPage() {
   return (
     <>
       <main
+        className="box-border flex flex-col overflow-x-hidden pt-[88px] max-lg:min-h-[100dvh] max-lg:overflow-y-auto lg:h-[100dvh] lg:overflow-hidden"
         style={{
-          minHeight: "100vh",
-          paddingTop: 88,
-          background: theme.colors.surface,
+          minHeight: 0,
+          background: "transparent",
         }}
       >
-        <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <section className="rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
-            <h2 className="text-xl font-black" style={{ color: duolingo.ink }}>
-              Search by word
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: duolingo.softInk }}>
-              Use the search box and choose a result from the list.
-            </p>
-
-            <div className="mt-4 rounded-2xl border-2 bg-white px-4 py-3" style={{ borderColor: duolingo.line }}>
-              <input
-                value={searchWord}
-                onChange={(event) => setSearchWord(event.target.value)}
-                placeholder="Type a word, phrase, or number..."
-                className="w-full bg-transparent text-base font-semibold outline-none"
-                style={{ color: duolingo.ink }}
-              />
-            </div>
-          </section>
-
-          {error ? (
-            <div className="mt-5 rounded-2xl border-2 px-4 py-3 text-sm font-bold" style={{ borderColor: "#ffb9b9", color: "#c32424", background: "#fff0f0" }}>
-              {error}
-            </div>
-          ) : null}
-
-          <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.2fr]">
-            <div className="rounded-3xl border-2 bg-white p-4 sm:p-5" style={{ borderColor: duolingo.line }}>
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-lg font-black" style={{ color: duolingo.ink }}>
-                  Related Words
-                </h3>
-                <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: duolingo.mint, color: duolingo.greenDark }}>
-                  {words.length} results
-                </span>
-              </div>
-
-              {loading ? (
-                <div className="rounded-2xl border-2 px-4 py-5 text-sm font-bold" style={{ borderColor: duolingo.line, color: duolingo.softInk }}>
-                  Loading dictionary videos...
-                </div>
-              ) : null}
-
-              {!loading && searchWord.trim() && words.length === 0 ? (
-                <div className="rounded-2xl border-2 px-4 py-5 text-sm font-bold" style={{ borderColor: duolingo.line, color: duolingo.softInk }}>
-                  No words found for your search.
-                </div>
-              ) : null}
-
-              {!searchWord.trim() ? (
-                <div className="rounded-2xl border-2 px-4 py-5 text-sm font-bold" style={{ borderColor: duolingo.line, color: duolingo.softInk }}>
-                  Start typing to see related videos.
-                </div>
-              ) : null}
-
-              <div className="grid gap-3">
-                {words.map((word) => {
-                  const wordLabel = getWordLabel(word);
-                  const isActive = selectedWord?._id === word._id;
-                  const videoCount = getWordVideos(word).length;
-
-                  return (
-                    <button
-                      key={word._id}
-                      type="button"
-                      onClick={() => setSelectedWord(word)}
-                      className="w-full rounded-2xl border-2 p-4 text-left transition"
+        <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 pb-3 pt-1 sm:px-6 sm:pb-4 sm:pt-2 lg:px-8">
+          <div className="flex min-h-0 w-full flex-1 flex-col">
+            <div
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+              style={{
+                borderRadius: 30,
+                border: `2px solid ${theme.colors.border}`,
+                background: "transparent",
+                boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              {/* Tìm kiếm — cùng gradient với khối dưới */}
+              <div
+                className="shrink-0"
+                style={{
+                  padding: "16px 20px",
+                  borderBottom: `2px solid ${theme.colors.border}`,
+                  background: videoSurfaceBg,
+                }}
+              >
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <div>
+                    <span
                       style={{
-                        borderColor: isActive ? duolingo.blue : duolingo.line,
-                        background: isActive ? "#e8f7ff" : "#fff",
-                        boxShadow: isActive ? "0 6px 0 #cfeeff" : "0 3px 0 #ececec",
+                        color: theme.colors.green,
+                        ...signlearnoUpperLabel,
+                        fontSize: 14,
+                        lineHeight: "18px",
+                        letterSpacing: 0.65,
                       }}
                     >
-                      <div className="text-base font-black" style={{ color: isActive ? duolingo.blue : duolingo.ink }}>
-                        {wordLabel}
-                      </div>
-                      <div className="mt-1 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: duolingo.softInk }}>
-                        {videoCount} video{videoCount === 1 ? "" : "s"}
-                      </div>
-                    </button>
-                  );
-                })}
+                      Search by word
+                    </span>
+                    <p className="mt-1 text-sm font-semibold" style={{ color: theme.colors.textMuted, ...signlearnoText }}>
+                      Type below and choose a result from Related Words.
+                    </p>
+                  </div>
+                  <div className="relative">
+                    <Search
+                      size={17}
+                      strokeWidth={2.5}
+                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+                      style={{ color: theme.colors.textMuted }}
+                      aria-hidden
+                    />
+                    <input
+                      value={searchWord}
+                      onChange={(event) => setSearchWord(event.target.value)}
+                      placeholder="Type a word, phrase, or number..."
+                      autoComplete="off"
+                      className="w-full rounded-xl border-2 py-2.5 pl-11 pr-4 text-[15px] font-semibold outline-none ring-0 transition-shadow focus-visible:shadow-[0_0_0_3px_var(--signlearno-focus)] sm:py-3 sm:text-base"
+                      style={{
+                        borderColor: theme.colors.border,
+                        background: theme.colors.surface,
+                        color: theme.colors.textStrong,
+                        ...signlearnoText,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="rounded-3xl border-2 bg-white p-4 sm:p-5" style={{ borderColor: duolingo.line }}>
-              <h3 className="text-lg font-black" style={{ color: duolingo.ink }}>
-                {selectedWord ? `Sign Videos: ${getWordLabel(selectedWord)}` : "Choose a word to preview videos"}
-              </h3>
+              {error ? (
+                <div
+                  className="shrink-0"
+                  style={{
+                    padding: "14px 24px",
+                    borderBottom: `2px solid ${theme.colors.border}`,
+                    background: "#fff5f5",
+                    color: theme.colors.red,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    ...signlearnoText,
+                  }}
+                >
+                  {error}
+                </div>
+              ) : null}
 
-              {selectedWord ? (
-                <>
-                  <div className="mt-4 overflow-hidden rounded-2xl border-2" style={{ borderColor: duolingo.line, background: "#000" }}>
-                    {activeVideoUrl ? (
-                      isDirectVideoUrl(activeVideoUrl) ? (
-                        <video
-                          key={activeVideoUrl}
-                          src={activeVideoUrl}
-                          controls
-                          autoPlay
-                          muted
-                          playsInline
-                          style={{ width: "100%", height: 520, border: "none", display: "block", objectFit: "contain", background: "#000" }}
-                        />
-                      ) : (
-                        <iframe
-                          key={activeVideoUrl}
-                          src={`${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0`}
-                          title={`Sign video ${getWordLabel(selectedWord)}`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                          allowFullScreen
-                          style={{ width: "100%", height: 520, border: "none", display: "block" }}
-                        />
-                      )
-                    ) : (
-                      <div className="flex min-h-[260px] items-center justify-center px-6 text-center text-sm font-bold" style={{ color: "#d3d3d3" }}>
-                        This word does not have a playable video URL.
-                      </div>
-                    )}
+              {/* Related Words | Preview — flex-1 để vừa viewport, scroll chỉ trong list */}
+              <div
+                className="grid min-h-0 flex-1 grid-cols-1 gap-0 max-lg:min-h-[min(60vh,520px)] lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]"
+                style={{ alignItems: "stretch" }}
+              >
+                <div
+                  className="flex min-h-0 min-w-0 flex-col border-b-2 p-3 text-card-foreground sm:p-4 max-lg:max-h-[min(42vh,380px)] lg:h-full lg:max-h-none lg:border-b-0 lg:border-r-2"
+                  style={{ borderColor: theme.colors.border, background: videoSurfaceBg }}
+                >
+                  <div className="mb-2 flex shrink-0 items-center justify-between gap-1.5 sm:mb-3 sm:gap-2">
+                    <span
+                      style={{
+                        color: theme.colors.green,
+                        ...signlearnoUpperLabel,
+                        fontSize: 14,
+                        lineHeight: "18px",
+                        letterSpacing: 0.65,
+                      }}
+                    >
+                      Related Words
+                    </span>
+                    <span
+                      className="shrink-0 rounded-full px-2.5 py-1 text-xs font-black sm:px-3 sm:py-1.5 sm:text-[13px]"
+                      style={{ background: theme.colors.greenSoft, color: theme.colors.greenDark }}
+                    >
+                      {relatedWordsFilter.trim() ? `${filteredRelatedWords.length}/${words.length}` : `${words.length} results`}
+                    </span>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {selectedWordVideos.map((video) => {
-                      const isVideoActive = video.url === activeVideoUrl;
+                  {!loading && words.length > 0 ? (
+                    <div className="relative mb-2 shrink-0 sm:mb-3">
+                      <Search
+                        size={15}
+                        strokeWidth={2.5}
+                        className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2"
+                        style={{ color: theme.colors.textMuted }}
+                        aria-hidden
+                      />
+                      <input
+                        type="search"
+                        value={relatedWordsFilter}
+                        onChange={(e) => setRelatedWordsFilter(e.target.value)}
+                        placeholder="Search words…"
+                        autoComplete="off"
+                        className="w-full rounded-lg border py-2 pl-8 pr-2.5 text-[13px] font-semibold outline-none ring-0 transition-shadow focus-visible:shadow-[0_0_0_3px_var(--signlearno-focus)] sm:rounded-xl sm:py-2.5 sm:pl-9 sm:text-sm"
+                        style={{
+                          borderColor: theme.colors.border,
+                          background: theme.colors.surface,
+                          color: theme.colors.textStrong,
+                          ...signlearnoText,
+                        }}
+                      />
+                    </div>
+                  ) : null}
 
-                      return (
-                        <button
-                          key={`${video.title}-${video.url}`}
-                          type="button"
-                          onClick={() => setActiveVideoUrl(video.url)}
-                          className="rounded-2xl border-2 px-4 py-3 text-left transition"
+                  {loading ? (
+                    <div
+                      className="rounded-2xl border-2 px-4 py-5 text-sm font-bold"
+                      style={{
+                        borderColor: theme.colors.border,
+                        color: theme.colors.textMuted,
+                        background: "var(--signlearno-glass)",
+                        ...signlearnoText,
+                      }}
+                    >
+                      Loading dictionary videos...
+                    </div>
+                  ) : null}
+
+                  {!loading && searchWord.trim() && words.length === 0 ? (
+                    <div
+                      className="rounded-2xl border-2 px-4 py-5 text-sm font-bold"
+                      style={{
+                        borderColor: theme.colors.border,
+                        color: theme.colors.textMuted,
+                        background: "var(--signlearno-glass)",
+                        ...signlearnoText,
+                      }}
+                    >
+                      No words found for your search.
+                    </div>
+                  ) : null}
+
+                  {!loading && !searchWord.trim() ? (
+                    <div
+                      className="rounded-2xl border-2 px-4 py-5 text-sm font-bold"
+                      style={{
+                        borderColor: theme.colors.border,
+                        color: theme.colors.textMuted,
+                        background: "var(--signlearno-glass)",
+                        ...signlearnoText,
+                      }}
+                    >
+                      Start typing above to see results.
+                    </div>
+                  ) : null}
+
+                  {!loading && words.length > 0 ? (
+                    <div
+                      className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pr-0.5 sm:gap-2.5"
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollbarColor: `${theme.colors.border} transparent`,
+                      }}
+                    >
+                      {filteredRelatedWords.length === 0 ? (
+                        <div
+                          className="rounded-xl border px-3 py-4 text-center text-[13px] font-bold leading-snug sm:text-sm"
                           style={{
-                            borderColor: isVideoActive ? duolingo.green : duolingo.line,
-                            background: isVideoActive ? duolingo.mint : "#fff",
+                            borderColor: theme.colors.border,
+                            color: theme.colors.textMuted,
+                            background: "var(--signlearno-glass)",
+                            ...signlearnoText,
                           }}
                         >
-                          <div className="text-sm font-black" style={{ color: duolingo.ink }}>
-                            {video.title}
-                          </div>
-                          <div className="mt-1 line-clamp-1 text-xs font-semibold" style={{ color: duolingo.softInk }}>
-                            {video.url}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className="mt-4 rounded-2xl border-2 px-4 py-5 text-sm font-bold" style={{ borderColor: duolingo.line, color: duolingo.softInk }}>
-                  Pick any result on the left to watch related sign videos.
+                          No matches for your search.
+                        </div>
+                      ) : (
+                        filteredRelatedWords.map((word) => {
+                          const wordLabel = getWordLabel(word);
+                          const isActive = selectedWord?._id === word._id;
+
+                          return (
+                            <button
+                              key={word._id}
+                              type="button"
+                              onClick={() => setSelectedWord(word)}
+                              className="flex w-full min-w-0 shrink-0 items-center rounded-xl text-left transition-colors duration-150 sm:rounded-2xl"
+                              style={{
+                                boxSizing: "border-box",
+                                minHeight: 44,
+                                padding: "11px 14px",
+                                border: `1px solid ${theme.colors.border}`,
+                                background: isActive ? theme.colors.green : "var(--signlearno-glass)",
+                                color: isActive ? theme.colors.surface : theme.colors.textStrong,
+                                fontSize: 15,
+                                lineHeight: 1.35,
+                                fontWeight: 700,
+                                ...signlearnoText,
+                              }}
+                              title={wordLabel}
+                            >
+                              <span className="min-w-0 flex-1 truncate">{wordLabel}</span>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  ) : null}
                 </div>
-              )}
+
+                <div className="flex min-h-0 min-w-0 flex-col max-lg:min-h-[min(46vh,420px)] lg:flex-1" style={{ background: videoSurfaceBg }}>
+                  {selectedWord ? (
+                    <>
+                      <div className="relative flex min-h-[200px] flex-1 flex-col overflow-hidden bg-black sm:min-h-[240px] lg:min-h-0">
+                        <div className="relative min-h-0 flex-1 overflow-hidden">
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 24,
+                              left: 24,
+                              zIndex: 2,
+                              color: theme.colors.green,
+                              textShadow: "0 1px 0 color-mix(in srgb, var(--signlearno-elevated) 75%, transparent)",
+                              ...signlearnoUpperLabel,
+                            }}
+                          >
+                            Sign preview
+                          </div>
+                          {activeVideoUrl ? (
+                            isDirectVideoUrl(activeVideoUrl) ? (
+                              <video
+                                key={activeVideoUrl}
+                                src={activeVideoUrl}
+                                controls
+                                autoPlay
+                                muted
+                                playsInline
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "none",
+                                  display: "block",
+                                  objectFit: "cover",
+                                  background: "#000",
+                                }}
+                              />
+                            ) : (
+                              <iframe
+                                key={activeVideoUrl}
+                                src={`${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0`}
+                                title={`Sign video ${getWordLabel(selectedWord)}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                                allowFullScreen
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "none",
+                                  display: "block",
+                                }}
+                              />
+                            )
+                          ) : (
+                            <div
+                              className="flex h-full min-h-[200px] items-center justify-center px-6 text-center text-sm font-bold"
+                              style={{ color: theme.colors.textSoft, ...signlearnoText }}
+                            >
+                              No playable video for this entry.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {selectedWordVideos.length > 1 ? (
+                        <div
+                          style={{
+                            padding: "12px 16px",
+                            borderTop: "2px solid rgba(88, 204, 2, 0.16)",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 8,
+                            alignItems: "center",
+                            background: "var(--signlearno-glass)",
+                            boxSizing: "border-box",
+                          }}
+                        >
+                          {selectedWordVideos.map((video) => {
+                            const isVideoActive = video.url === activeVideoUrl;
+                            return (
+                              <button
+                                key={`${video.title}-${video.url}`}
+                                type="button"
+                                onClick={() => setActiveVideoUrl(video.url)}
+                                style={{
+                                  padding: "8px 12px",
+                                  borderRadius: 999,
+                                  border: `2px solid ${isVideoActive ? theme.colors.green : theme.colors.border}`,
+                                  background: isVideoActive ? theme.colors.greenSoft : "var(--signlearno-glass)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  color: theme.colors.textStrong,
+                                  fontSize: 13,
+                                  lineHeight: "18px",
+                                  fontWeight: 700,
+                                  ...signlearnoText,
+                                  whiteSpace: "nowrap",
+                                  maxWidth: "100%",
+                                }}
+                              >
+                                <span className="truncate">{video.title}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div
+                      className="flex min-h-[min(36vh,280px)] flex-1 items-center justify-center px-6 text-center lg:min-h-0"
+                      style={{
+                        background: videoSurfaceBg,
+                        color: theme.colors.textMuted,
+                        fontSize: 16,
+                        fontWeight: 700,
+                        ...signlearnoText,
+                      }}
+                    >
+                      Pick a related word on the left to preview the sign video.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </section>
+          </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

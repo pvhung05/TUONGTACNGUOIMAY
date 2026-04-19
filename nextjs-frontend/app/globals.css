@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 0 0% 29%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -15,7 +15,7 @@
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 0 0% 48%;
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
@@ -57,28 +57,34 @@
     --signlearno-glass: rgba(255, 255, 255, 0.88);
     --signlearno-soft-gradient-start: rgba(229, 247, 215, 0.9);
     --signlearno-soft-gradient-end: rgba(255, 255, 255, 0.98);
+    /* Lớp gradient hero trang chủ — phủ trên canvas */
+    --signlearno-page-overlay: linear-gradient(
+      135deg,
+      var(--signlearno-green-soft) 0%,
+      rgba(28, 176, 246, 0.05) 100%
+    );
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 210 21% 7%;
+    --foreground: 213 20% 93%;
+    --card: 210 19% 11%;
+    --card-foreground: 213 20% 93%;
+    --popover: 210 19% 11%;
+    --popover-foreground: 213 20% 93%;
+    --primary: 213 20% 93%;
+    --primary-foreground: 210 21% 7%;
+    --secondary: 210 14% 16%;
+    --secondary-foreground: 213 20% 93%;
+    --muted: 210 14% 16%;
+    --muted-foreground: 213 15% 72%;
+    --accent: 210 14% 18%;
+    --accent-foreground: 213 20% 93%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 210 14% 22%;
+    --input: 210 14% 22%;
+    --ring: 198 93% 54%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -113,6 +119,11 @@
     --signlearno-glass: rgba(29, 36, 43, 0.9);
     --signlearno-soft-gradient-start: rgba(24, 40, 21, 0.9);
     --signlearno-soft-gradient-end: rgba(22, 27, 32, 0.98);
+    --signlearno-page-overlay: linear-gradient(
+      135deg,
+      var(--signlearno-green-soft) 0%,
+      rgba(28, 176, 246, 0.14) 100%
+    );
   }
 }
 
@@ -123,11 +134,40 @@
 
   html {
     scroll-behavior: smooth;
+    min-height: 100%;
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-geist-sans), sans-serif;
+    min-height: 100vh;
+    background-color: var(--signlearno-canvas);
+    background-image: var(--signlearno-page-overlay);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: var(--signlearno-text-strong);
+    font-family: var(--font-signlearno-sans), var(--font-geist-sans), sans-serif;
+  }
+
+  /** Theme toggle: chỉ icon, không khung — tràn vùng bấm, không nền/viền */
+  button.theme-toggle {
+    appearance: none;
+    border-style: none !important;
+    border-width: 0 !important;
+    border-color: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+  }
+
+  button.theme-toggle:hover,
+  button.theme-toggle:active {
+    transform: none;
+  }
+
+  button.theme-toggle:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px var(--signlearno-focus) !important;
   }
 
   button,
@@ -247,4 +287,122 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/**
+ * Custom cursor — SignLearn (chuột phù hợp vibe xanh/tươi)
+ * Chỉ kích hoạt khi body có .signlearno-custom-cursor (desktop + không giảm chuyển động).
+ */
+@keyframes signlearno-cursor-ring-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--signlearno-green) 45%, transparent),
+      0 2px 12px color-mix(in srgb, var(--signlearno-green) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px color-mix(in srgb, var(--signlearno-green) 14%, transparent),
+      0 4px 18px color-mix(in srgb, var(--signlearno-green) 28%, transparent);
+  }
+}
+
+.signlearno-cursor-ring {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 2px solid color-mix(in srgb, var(--signlearno-green) 78%, #ffffff);
+  background: color-mix(in srgb, var(--signlearno-green-soft) 65%, transparent);
+  will-change: transform;
+  animation: signlearno-cursor-ring-pulse 2.6s ease-in-out infinite;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+@keyframes signlearno-hand-wave {
+  0%,
+  100% {
+    transform: rotate(-14deg) translateY(0);
+  }
+  25% {
+    transform: rotate(8deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(-6deg) translateY(1px);
+  }
+  75% {
+    transform: rotate(12deg) translateY(-1px);
+  }
+}
+
+.signlearno-cursor-hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  will-change: transform;
+}
+
+.signlearno-cursor-hand-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.signlearno-cursor-hand-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 55% 85%;
+  animation: signlearno-hand-wave 1.35s ease-in-out infinite;
+}
+
+.signlearno-cursor-hand-svg {
+  display: block;
+}
+
+body[data-signlearno-cursor="pointer"] .signlearno-cursor-ring {
+  width: 42px;
+  height: 42px;
+  border-color: color-mix(in srgb, var(--signlearno-green) 88%, #ffffff);
+}
+
+body[data-signlearno-cursor="pointer"] .signlearno-cursor-hand-stack {
+  transform: scale(1.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signlearno-cursor-ring {
+    animation: none;
+  }
+
+  .signlearno-cursor-hand-inner {
+    animation: none;
+  }
+}
+
+/**
+ * Ẩn hoàn toàn con trỏ hệ thống — dùng html + body + * để thắng Tailwind cursor-*
+ */
+html.signlearno-custom-cursor,
+html.signlearno-custom-cursor body {
+  cursor: none !important;
+}
+
+html.signlearno-custom-cursor *,
+html.signlearno-custom-cursor *::before,
+html.signlearno-custom-cursor *::after {
+  cursor: none !important;
+}
+
+body.signlearno-custom-cursor[data-signlearno-cursor="text"] input,
+body.signlearno-custom-cursor[data-signlearno-cursor="text"] textarea,
+body.signlearno-custom-cursor[data-signlearno-cursor="text"] select,
+body.signlearno-custom-cursor[data-signlearno-cursor="text"] [contenteditable="true"] {
+  cursor: text !important;
 }

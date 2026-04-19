@@ -26,20 +26,24 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
+      className="theme-toggle"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 38,
-        height: 38,
-        borderRadius: 10,
+        padding: 8,
+        minWidth: 40,
+        minHeight: 40,
+        borderRadius: 0,
         border: "none",
-        background: theme.colors.surface,
+        borderWidth: 0,
+        boxShadow: "none",
+        background: "transparent",
         cursor: "pointer",
         color: theme.colors.textMuted,
-        transition: "background 140ms",
+        transition: "color 140ms",
         flexShrink: 0,
       }}
       onMouseEnter={(e) => {
