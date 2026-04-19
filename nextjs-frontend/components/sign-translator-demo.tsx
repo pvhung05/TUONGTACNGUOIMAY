@@ -22,7 +22,7 @@ export function SignTranslatorDemo({ translatorMode }: { translatorMode?: "textT
       style={{
         maxWidth: 1440,
         margin: "0 auto",
-        padding: "100px 24px 0",
+        padding: "20px 24px 40px",
         boxSizing: "border-box",
       }}
     >
