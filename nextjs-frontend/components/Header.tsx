@@ -214,13 +214,13 @@ export function Header() {
       style={{
         width: "100%",
         borderBottom: "none",
-        background: "transparent",
+        background: theme.colors.surface,
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         zIndex: 40,
-        boxShadow: "none",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
       }}
     >
       <div

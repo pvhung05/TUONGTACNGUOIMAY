@@ -179,7 +179,7 @@ export default function PracticePage() {
   };
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "30px 24px 80px" }}>
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "100px 24px 80px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
         <p style={{ ...signlearnoText, color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red }}>

@@ -55,6 +55,7 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "autoprefixer": "^10.4.20",
+    "baseline-browser-mapping": "^2.10.19",
     "chokidar": "^4.0.1",
     "chokidar-cli": "^3.0.0",
     "eslint": "^9.18.0",
