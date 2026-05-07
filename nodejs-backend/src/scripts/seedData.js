@@ -172,72 +172,54 @@ const seedData = async () => {
     ]);
     logger.info(`Created ${lessons.length} sample lessons`);
 
-    // Seed sample translator words
-    const translatorWords = [
-      {
-        title: 'hello',
-        videos: [
-          { title: 'Hello - main video', url: 'https://example.com/hello.mp4' },
-        ],
-      },
-      {
-        title: 'goodbye',
-        videos: [
-          { title: 'Goodbye - main video', url: 'https://example.com/goodbye.mp4' },
-        ],
-      },
-      {
-        title: 'thank you',
-        videos: [
-          { title: 'Thank you - main video', url: 'https://example.com/thank-you.mp4' },
-        ],
-      },
-      {
-        title: 'please',
-        videos: [
-          { title: 'Please - main video', url: 'https://example.com/please.mp4' },
-        ],
-      },
-      {
-        title: 'yes',
-        videos: [
-          { title: 'Yes - main video', url: 'https://example.com/yes.mp4' },
-        ],
-      },
-      {
-        title: 'no',
-        videos: [
-          { title: 'No - main video', url: 'https://example.com/no.mp4' },
-        ],
-      },
-      {
-        title: 'help',
-        videos: [
-          { title: 'Help - main video', url: 'https://example.com/help.mp4' },
-        ],
-      },
-      {
-        title: 'water',
-        videos: [
-          { title: 'Water - main video', url: 'https://example.com/water.mp4' },
-        ],
-      },
-      {
-        title: 'food',
-        videos: [
-          { title: 'Food - main video', url: 'https://example.com/food.mp4' },
-        ],
-      },
-      {
-        title: 'friend',
-        videos: [
-          { title: 'Friend - main video', url: 'https://example.com/friend.mp4' },
-        ],
-      },
+    // Seed sample translator words - all videos in single array
+    const allVideos = [
+      // Greetings
+      { title: 'Hello Sign', url: 'https://media.example.com/videos/hello.mp4' },
+      { title: 'Hello (Alternative)', url: 'https://media.example.com/videos/hello-alt.mp4' },
+      { title: 'Goodbye Sign', url: 'https://media.example.com/videos/goodbye.mp4' },
+
+      // Health related - "health" words
+      { title: 'Health - Basic', url: 'https://media.example.com/videos/health.mp4' },
+      { title: 'Health - Alternative', url: 'https://media.example.com/videos/health-alt.mp4' },
+      { title: 'Healthy Living', url: 'https://media.example.com/videos/healthy.mp4' },
+      { title: 'Healthcare Services', url: 'https://media.example.com/videos/health-care.mp4' },
+      { title: 'Mental Health', url: 'https://media.example.com/videos/mental-health.mp4' },
+      { title: 'Health Insurance Sign', url: 'https://media.example.com/videos/health-insurance.mp4' },
+      { title: 'Health Promotion', url: 'https://media.example.com/videos/health-promotion.mp4' },
+
+      // Health related - "run" words
+      { title: 'Run Motion', url: 'https://media.example.com/videos/run.mp4' },
+      { title: 'Run (Fast Pace)', url: 'https://media.example.com/videos/run-fast.mp4' },
+      { title: 'Running Continuously', url: 'https://media.example.com/videos/running.mp4' },
+      { title: 'Run Away Sign', url: 'https://media.example.com/videos/run-away.mp4' },
+      { title: 'Runner Person', url: 'https://media.example.com/videos/runner.mp4' },
+
+      // Basic vocabulary
+      { title: 'Thank you Gesture', url: 'https://media.example.com/videos/thank-you.mp4' },
+      { title: 'Please Sign', url: 'https://media.example.com/videos/please.mp4' },
+      { title: 'Yes Affirmation', url: 'https://media.example.com/videos/yes.mp4' },
+      { title: 'No Denial', url: 'https://media.example.com/videos/no.mp4' },
+      { title: 'Help Request', url: 'https://media.example.com/videos/help.mp4' },
+      { title: 'Water Drinking', url: 'https://media.example.com/videos/water.mp4' },
+      { title: 'Food Eating', url: 'https://media.example.com/videos/food.mp4' },
+      { title: 'Friend Connection', url: 'https://media.example.com/videos/friend.mp4' },
+      { title: 'Friend (Formal)', url: 'https://media.example.com/videos/friend-formal.mp4' },
+
+      // More related words
+      { title: 'Exercise Activity', url: 'https://media.example.com/videos/exercise.mp4' },
+      { title: 'Fitness Training', url: 'https://media.example.com/videos/fitness.mp4' },
+      { title: 'Sports Activity', url: 'https://media.example.com/videos/sport.mp4' },
+      { title: 'Doctor Professional', url: 'https://media.example.com/videos/doctor.mp4' },
+      { title: 'Medicine Treatment', url: 'https://media.example.com/videos/medicine.mp4' },
     ];
 
-    const words = await Translator.insertMany(translatorWords);
-    logger.info(`Created ${words.length} sample translator words`);
+    const translatorWords = await Translator.create({
+      title: 'dictionary',
+      videos: allVideos,
+    });
+
+    logger.info(`Created translator dictionary with ${allVideos.length} videos`);
 
     logger.info('Seed data completed successfully!');
     process.exit(0);

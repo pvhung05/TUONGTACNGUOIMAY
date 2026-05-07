@@ -4,34 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { getDictionaryEntries } from "@/lib/api";
-import type { TranslatorWord } from "@/lib/api/backend";
+import type { DictionaryVideo } from "@/lib/api/backend";
 
 type VideoItem = {
   title: string;
   url: string;
 };
 
-function getWordLabel(word: TranslatorWord): string {
-  return String(word.title || word.text || "").trim();
-}
-
-function getWordVideos(word: TranslatorWord | null): VideoItem[] {
-  if (!word) return [];
-
-  if (Array.isArray(word.videos) && word.videos.length > 0) {
-    return word.videos
-      .map((video) => ({
-        title: String(video.title || getWordLabel(word)).trim() || getWordLabel(word),
-        url: String(video.url || "").trim(),
-      }))
-      .filter((video) => video.url);
-  }
-
-  if (word.videoUrl) {
-    return [{ title: getWordLabel(word), url: word.videoUrl }];
-  }
-
-  return [];
+function getVideoLabel(video: DictionaryVideo): string {
+  return String(video.title || "").trim();
 }
 
 function isDirectVideoUrl(url: string): boolean {
@@ -41,9 +22,8 @@ function isDirectVideoUrl(url: string): boolean {
 
 export default function WordSearchPage() {
   const [searchWord, setSearchWord] = useState("");
-  const [words, setWords] = useState<TranslatorWord[]>([]);
-  const [selectedWord, setSelectedWord] = useState<TranslatorWord | null>(null);
-  const [activeVideoUrl, setActiveVideoUrl] = useState("");
+  const [words, setWords] = useState<DictionaryVideo[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<DictionaryVideo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [relatedWordsFilter, setRelatedWordsFilter] = useState("");
@@ -51,40 +31,26 @@ export default function WordSearchPage() {
   const videoSurfaceBg =
     "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)";
 
-  const selectedWordVideos = useMemo(() => getWordVideos(selectedWord), [selectedWord]);
-
   const filteredRelatedWords = useMemo(() => {
     const q = relatedWordsFilter.trim().toLowerCase();
     if (!q) return words;
     return words.filter((w) => {
-      const label = getWordLabel(w).toLowerCase();
+      const label = getVideoLabel(w).toLowerCase();
       return label.includes(q);
     });
   }, [words, relatedWordsFilter]);
 
   useEffect(() => {
-    if (selectedWordVideos.length === 0) {
-      setActiveVideoUrl("");
-      return;
-    }
-
-    const stillExists = selectedWordVideos.some((video) => video.url === activeVideoUrl);
-    if (!stillExists) {
-      setActiveVideoUrl(selectedWordVideos[0].url);
-    }
-  }, [selectedWordVideos, activeVideoUrl]);
-
-  useEffect(() => {
     const q = relatedWordsFilter.trim();
     if (!q) return;
     if (filteredRelatedWords.length === 0) {
-      setSelectedWord(null);
+      setSelectedVideo(null);
       return;
     }
-    if (!selectedWord || !filteredRelatedWords.some((w) => w._id === selectedWord._id)) {
-      setSelectedWord(filteredRelatedWords[0]);
+    if (!selectedVideo || !filteredRelatedWords.some((w) => w.url === selectedVideo.url)) {
+      setSelectedVideo(filteredRelatedWords[0]);
     }
-  }, [relatedWordsFilter, filteredRelatedWords, selectedWord]);
+  }, [relatedWordsFilter, filteredRelatedWords, selectedVideo]);
 
   useEffect(() => {
     setRelatedWordsFilter("");
@@ -96,7 +62,7 @@ export default function WordSearchPage() {
 
       if (!query) {
         setWords([]);
-        setSelectedWord(null);
+        setSelectedVideo(null);
         setError(null);
         setLoading(false);
         return;
@@ -107,13 +73,13 @@ export default function WordSearchPage() {
         setError(null);
         try {
           const response = await getDictionaryEntries(query, 80);
-          const incomingWords = Array.isArray(response.words) ? response.words : [];
-          setWords(incomingWords);
-          setSelectedWord(incomingWords[0] || null);
+          const incomingVideos = Array.isArray(response.words) ? response.words : [];
+          setWords(incomingVideos);
+          setSelectedVideo(incomingVideos[0] || null);
         } catch (nextError) {
-          setError(nextError instanceof Error ? nextError.message : "Failed to load words.");
+          setError(nextError instanceof Error ? nextError.message : "Failed to load videos.");
           setWords([]);
-          setSelectedWord(null);
+          setSelectedVideo(null);
         } finally {
           setLoading(false);
         }
@@ -331,15 +297,15 @@ export default function WordSearchPage() {
                           No matches for your search.
                         </div>
                       ) : (
-                        filteredRelatedWords.map((word) => {
-                          const wordLabel = getWordLabel(word);
-                          const isActive = selectedWord?._id === word._id;
+                        filteredRelatedWords.map((video) => {
+                          const videoLabel = getVideoLabel(video);
+                          const isActive = selectedVideo?.url === video.url;
 
                           return (
                             <button
-                              key={word._id}
+                              key={video.url}
                               type="button"
-                              onClick={() => setSelectedWord(word)}
+                              onClick={() => setSelectedVideo(video)}
                               className="flex w-full min-w-0 shrink-0 items-center rounded-xl text-left transition-colors duration-150 sm:rounded-2xl"
                               style={{
                                 boxSizing: "border-box",
@@ -353,9 +319,9 @@ export default function WordSearchPage() {
                                 fontWeight: 700,
                                 ...signlearnoText,
                               }}
-                              title={wordLabel}
+                              title={videoLabel}
                             >
-                              <span className="min-w-0 flex-1 truncate">{wordLabel}</span>
+                              <span className="min-w-0 flex-1 truncate">{videoLabel}</span>
                             </button>
                           );
                         })
@@ -365,7 +331,7 @@ export default function WordSearchPage() {
                 </div>
 
                 <div className="flex min-h-0 min-w-0 flex-col max-lg:min-h-[min(46vh,420px)] lg:flex-1" style={{ background: videoSurfaceBg }}>
-                  {selectedWord ? (
+                  {selectedVideo ? (
                     <>
                       <div className="relative flex min-h-[200px] flex-1 flex-col overflow-hidden bg-black sm:min-h-[240px] lg:min-h-0">
                         <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -382,11 +348,11 @@ export default function WordSearchPage() {
                           >
                             Sign preview
                           </div>
-                          {activeVideoUrl ? (
-                            isDirectVideoUrl(activeVideoUrl) ? (
+                          {selectedVideo.url ? (
+                            isDirectVideoUrl(selectedVideo.url) ? (
                               <video
-                                key={activeVideoUrl}
-                                src={activeVideoUrl}
+                                key={selectedVideo.url}
+                                src={selectedVideo.url}
                                 controls
                                 autoPlay
                                 muted
@@ -404,9 +370,9 @@ export default function WordSearchPage() {
                               />
                             ) : (
                               <iframe
-                                key={activeVideoUrl}
-                                src={`${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0`}
-                                title={`Sign video ${getWordLabel(selectedWord)}`}
+                                key={selectedVideo.url}
+                                src={`${selectedVideo.url}${selectedVideo.url.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0`}
+                                title={`Sign video ${getVideoLabel(selectedVideo)}`}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
                                 allowFullScreen
                                 style={{
@@ -429,50 +395,6 @@ export default function WordSearchPage() {
                           )}
                         </div>
                       </div>
-
-                      {selectedWordVideos.length > 1 ? (
-                        <div
-                          style={{
-                            padding: "12px 16px",
-                            borderTop: "2px solid rgba(88, 204, 2, 0.16)",
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 8,
-                            alignItems: "center",
-                            background: "var(--signlearno-glass)",
-                            boxSizing: "border-box",
-                          }}
-                        >
-                          {selectedWordVideos.map((video) => {
-                            const isVideoActive = video.url === activeVideoUrl;
-                            return (
-                              <button
-                                key={`${video.title}-${video.url}`}
-                                type="button"
-                                onClick={() => setActiveVideoUrl(video.url)}
-                                style={{
-                                  padding: "8px 12px",
-                                  borderRadius: 999,
-                                  border: `2px solid ${isVideoActive ? theme.colors.green : theme.colors.border}`,
-                                  background: isVideoActive ? theme.colors.greenSoft : "var(--signlearno-glass)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  color: theme.colors.textStrong,
-                                  fontSize: 13,
-                                  lineHeight: "18px",
-                                  fontWeight: 700,
-                                  ...signlearnoText,
-                                  whiteSpace: "nowrap",
-                                  maxWidth: "100%",
-                                }}
-                              >
-                                <span className="truncate">{video.title}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : null}
                     </>
                   ) : (
                     <div
@@ -485,7 +407,7 @@ export default function WordSearchPage() {
                         ...signlearnoText,
                       }}
                     >
-                      Pick a related word on the left to preview the sign video.
+                      Pick a video on the left to preview the sign.
                     </div>
                   )}
                 </div>

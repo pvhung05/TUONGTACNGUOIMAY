@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
 import { loginUser, setStoredToken } from "@/lib/api";
+import { getApiBaseUrl } from "@/lib/api/client";
 import heroLogo from "@/components/Gemini_Generated_Image_7bvlng7bvlng7bvl (1).png";
 
 export default function LoginPage() {
@@ -14,6 +15,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loginError = params.get("error");
+
+    if (loginError) {
+      setError(decodeURIComponent(loginError));
+    }
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,6 +40,12 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    window.location.href = `${getApiBaseUrl()}/api/auth/google`;
   };
 
   const heroCtaBaseStyle = {
@@ -175,9 +192,13 @@ export default function LoginPage() {
           {/* Google button */}
           <button
             type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading}
             data-shadow-rest="0 8px 24px rgba(88, 204, 2, 0.3)"
             style={{
               ...heroCtaBaseStyle,
+              cursor: googleLoading ? "not-allowed" : "pointer",
+              opacity: googleLoading ? 0.8 : 1,
             }}
             onMouseEnter={onHeroCtaMouseEnter}
             onMouseLeave={onHeroCtaMouseLeave}
@@ -190,7 +211,7 @@ export default function LoginPage() {
                 <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.4-11.3-8H6.2C9.5 38.9 16.2 44 24 44z" />
                 <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.7l6.2 5.2C41.1 35.3 44 30 44 24c0-1.2-.1-2.3-.4-3.5z" />
               </svg>
-              Continue with Google
+              {googleLoading ? "Redirecting..." : "Continue with Google"}
             </span>
           </button>
 
