@@ -73,15 +73,15 @@ class TranslatorController {
     try {
       const { q, search, limit = 30 } = req.query;
       const query = q ?? search ?? '';
-      const words = await translatorService.getDictionaryEntries(query, limit);
+      const videos = await translatorService.getDictionaryEntries(query, limit);
 
       res.status(200).json({
         success: true,
         message: 'Dictionary entries retrieved',
         data: {
           query: String(query || '').trim(),
-          count: words.length,
-          words,
+          count: videos.length,
+          words: videos,
         },
       });
     } catch (error) {

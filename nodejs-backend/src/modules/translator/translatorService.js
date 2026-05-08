@@ -29,12 +29,12 @@ class TranslatorService {
     ];
   }
 
-  rankWordsByRelevance(words, query) {
+  rankVideosByRelevance(videos, query) {
     const normalized = query.toLowerCase();
 
-    return words
-      .map((word) => {
-        const text = String(word.title || word.text || '').toLowerCase();
+    return videos
+      .map((video) => {
+        const text = String(video.title || '').toLowerCase();
         let score = 0;
 
         if (text === normalized) {
@@ -45,14 +45,14 @@ class TranslatorService {
           score = 1;
         }
 
-        return { word, score };
+        return { video, score };
       })
       .filter((item) => item.score > 0)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
-        return a.word.text.localeCompare(b.word.text);
+        return a.video.title.localeCompare(b.video.title);
       })
-      .map((item) => item.word);
+      .map((item) => item.video);
   }
 
   async addWord({ text, title, videoUrl, videos }) {
@@ -126,13 +126,19 @@ class TranslatorService {
       }
 
       const escapedQuery = this.escapeRegex(query);
-      const words = await Translator.find({
-        title: { $regex: escapedQuery, $options: 'i' },
-      })
-        .sort({ title: 1 })
-        .limit(Math.max(limit, 1) * 3);
+      const docs = await Translator.find({
+        'videos.title': { $regex: escapedQuery, $options: 'i' },
+      });
 
-      return this.rankWordsByRelevance(words, query).slice(0, Math.max(limit, 1));
+      // Collect all videos and filter by query
+      let allVideos = [];
+      docs.forEach((doc) => {
+        if (Array.isArray(doc.videos)) {
+          allVideos = allVideos.concat(doc.videos);
+        }
+      });
+
+      return this.rankVideosByRelevance(allVideos, query).slice(0, Math.max(limit, 1));
     } catch (error) {
       logger.error('Search words error:', error.message);
       throw error;
@@ -145,7 +151,15 @@ class TranslatorService {
       const query = String(searchText || '').trim();
 
       if (!query) {
-        return await Translator.find({}).sort({ title: 1 }).limit(normalizedLimit);
+        // Return all videos if no search query
+        const docs = await Translator.find({});
+        let allVideos = [];
+        docs.forEach((doc) => {
+          if (Array.isArray(doc.videos)) {
+            allVideos = allVideos.concat(doc.videos);
+          }
+        });
+        return allVideos.slice(0, normalizedLimit);
       }
 
       return await this.searchWords(query, normalizedLimit);

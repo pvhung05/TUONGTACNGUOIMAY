@@ -4,9 +4,8 @@ const translatorSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
       trim: true,
-      unique: true,
+      default: 'dictionary',
     },
     videos: {
       type: [
@@ -14,7 +13,7 @@ const translatorSchema = new mongoose.Schema(
           title: {
             type: String,
             trim: true,
-            default: '',
+            required: true,
           },
           url: {
             type: String,
@@ -41,6 +40,10 @@ const translatorSchema = new mongoose.Schema(
 
 translatorSchema.virtual('text').get(function () {
   return this.title;
+});
+
+translatorSchema.virtual('id').get(function () {
+  return this._id?.toString() || '';
 });
 
 translatorSchema.virtual('videoUrl').get(function () {

@@ -5,10 +5,9 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
-      minlength: 3,
+      sparse: true,
     },
     email: {
       type: String,
@@ -18,8 +17,18 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
       minlength: 6,
+    },
+    // OAuth fields
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    provider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
     },
     role: {
       type: String,
@@ -44,9 +53,12 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash password trước khi lưu
+// Hash password trước khi lưu (chỉ hash nếu password thay đổi)
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+
+  // Skip hashing nếu không có password (OAuth user)
+  if (!this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);

@@ -74,13 +74,20 @@ export type UserRankData = {
   user: LeaderboardUser;
 };
 
+export type DictionaryVideo = {
+  title: string;
+  url: string;
+};
+
 export type TranslatorWord = {
   _id: string;
+  id?: string;
   title: string;
   text?: string;
   videoUrl?: string;
   videos?: Array<{
     _id?: string;
+    id?: string;
     title: string;
     url: string;
   }>;
@@ -101,7 +108,7 @@ export type PaginatedWords = {
 export type DictionaryEntries = {
   query: string;
   count: number;
-  words: TranslatorWord[];
+  words: DictionaryVideo[];
 };
 
 export type SignVideoItem = {
