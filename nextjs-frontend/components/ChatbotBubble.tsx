@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
+import { usePathname } from "next/navigation";
 
 const FAB_SIZE = 60;
 const FAB_RIGHT = 24;
@@ -12,11 +13,26 @@ const STORAGE_KEY = "signlearno-chat-fab-bottom";
 const DRAG_THRESHOLD_PX = 8;
 
 export function ChatbotBubble() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [fabBottom, setFabBottom] = useState(24);
   const [viewportH, setViewportH] = useState(
     typeof window !== "undefined" ? window.innerHeight : 720,
   );
+
+  type Message = {
+    role: "user" | "assistant";
+    content: string;
+  };
+
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: "👋 Xin chào! Mình là trợ lý SignLearn. Mình có thể giúp gì cho bạn hôm nay?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastSentTime, setLastSentTime] = useState(0);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const draggingRef = useRef(false);
   const dragMovedRef = useRef(false);
@@ -114,6 +130,55 @@ export function ChatbotBubble() {
     setIsDraggingUi(false);
   };
 
+  const sendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    // Rate limiting: 2 seconds
+    const now = Date.now();
+    if (now - lastSentTime < 2000) {
+      return;
+    }
+    setLastSentTime(now);
+
+    const userMsg: Message = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: input,
+          history: messages.slice(-10), // send last 10 messages
+          current_route: pathname,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch");
+      }
+
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "❌ Xin lỗi, hệ thống đang bận hoặc gặp sự cố. Vui lòng thử lại sau." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (isOpen && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isOpen, isLoading]);
+
   const panelBottom = fabBottom + FAB_SIZE + 16;
 
   return (
@@ -199,23 +264,55 @@ export function ChatbotBubble() {
               background: "#F9FAFB",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            {messages.map((msg, idx) => (
               <div
+                key={idx}
                 style={{
-                  maxWidth: "80%",
-                  padding: "12px 16px",
-                  borderRadius: 16,
-                  background: "white",
-                  border: `1px solid ${theme.colors.border}`,
-                  color: theme.colors.textStrong,
-                  fontSize: 14,
-                  lineHeight: "20px",
-                  ...signlearnoText,
+                  display: "flex",
+                  justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
                 }}
               >
-                👋 Welcome! I&apos;m your SignLearn assistant. How can I help you learn sign language today?
+                <div
+                  style={{
+                    maxWidth: "80%",
+                    padding: "12px 16px",
+                    borderRadius: 16,
+                    background: msg.role === "user" ? theme.colors.green : "white",
+                    border: msg.role === "user" ? "none" : `1px solid ${theme.colors.border}`,
+                    color: msg.role === "user" ? "white" : theme.colors.textStrong,
+                    fontSize: 14,
+                    lineHeight: "20px",
+                    ...signlearnoText,
+                  }}
+                >
+                  {msg.content}
+                </div>
               </div>
-            </div>
+            ))}
+            {isLoading && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div
+                  style={{
+                    maxWidth: "80%",
+                    padding: "12px 16px",
+                    borderRadius: 16,
+                    background: "white",
+                    border: `1px solid ${theme.colors.border}`,
+                    color: theme.colors.textStrong,
+                    fontSize: 14,
+                    lineHeight: "20px",
+                    display: "flex",
+                    gap: 4,
+                    alignItems: "center",
+                    ...signlearnoText,
+                  }}
+                >
+                  <span className="dot-typing" />
+                  Đang suy nghĩ...
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
           <div
@@ -228,7 +325,12 @@ export function ChatbotBubble() {
           >
             <input
               type="text"
-              placeholder="Type your message..."
+              placeholder="Nhập tin nhắn..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendMessage();
+              }}
               style={{
                 flex: 1,
                 padding: "10px 14px",
@@ -245,29 +347,32 @@ export function ChatbotBubble() {
               onBlur={(ev) => {
                 ev.currentTarget.style.borderColor = theme.colors.border;
               }}
+              disabled={isLoading}
             />
             <button
               type="button"
+              onClick={sendMessage}
+              disabled={isLoading}
               style={{
                 padding: "10px 16px",
                 borderRadius: 12,
                 border: "none",
-                background: theme.colors.green,
+                background: isLoading ? "#A0AEC0" : theme.colors.green,
                 color: "white",
-                cursor: "pointer",
+                cursor: isLoading ? "not-allowed" : "pointer",
                 fontWeight: 600,
                 fontSize: 13,
                 transition: "all 200ms ease",
                 ...signlearnoText,
               }}
               onMouseEnter={(ev) => {
-                ev.currentTarget.style.opacity = "0.9";
+                if (!isLoading) ev.currentTarget.style.opacity = "0.9";
               }}
               onMouseLeave={(ev) => {
-                ev.currentTarget.style.opacity = "1";
+                if (!isLoading) ev.currentTarget.style.opacity = "1";
               }}
             >
-              Send
+              Gửi
             </button>
           </div>
         </div>
@@ -283,6 +388,18 @@ export function ChatbotBubble() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        @keyframes blink {
+          0% { opacity: 0.2; }
+          20% { opacity: 1; }
+          100% { opacity: 0.2; }
+        }
+        .dot-typing {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background-color: ${theme.colors.textStrong};
+          animation: blink 1.4s infinite both;
         }
       `}</style>
     </>

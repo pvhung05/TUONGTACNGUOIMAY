@@ -20,6 +20,14 @@ class Settings(BaseSettings):
     DEFAULT_SPOKEN_LANGUAGE: str = "en"
     DEFAULT_SIGNED_LANGUAGE: str = "ase"
 
+    # Gemini / RAG
+    GEMINI_API_KEY: str = ""
+    RAG_CHROMA_DIR: str = "rag_data/chroma_db"
+    RAG_ASL_DIR: str = "../ASL_in_RAG"
+    RAG_CHUNK_SIZE: int = 1000
+    RAG_CHUNK_OVERLAP: int = 200
+    RAG_TOP_K: int = 5
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
