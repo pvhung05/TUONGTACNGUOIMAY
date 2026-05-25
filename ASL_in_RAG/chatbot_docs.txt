@@ -1,0 +1,492 @@
+SignLearno Workflow Guide cho Chatbot
+=====================================
+
+Tài liệu này là nguồn tham khảo cho SignLearn Assistant khi người dùng mới hỏi cách dùng app. Khi trả lời, chatbot nên ưu tiên hướng dẫn thao tác rõ ràng: đi tới trang nào, bấm nút nào, nhập gì, kết quả sẽ hiện ở đâu.
+
+Nguyên tắc trả lời của chatbot
+------------------------------
+
+   Trả lời bằng tiếng Việt tự nhiên, ngắn gọn, theo từng bước.
+   Luôn nêu đường dẫn route nếu câu hỏi liên quan đến điều hướng, ví dụ: /learn/lesson.
+   Nếu người dùng đang ở đúng trang, hướng dẫn thao tác tiếp theo trên trang hiện tại trước.
+   Nếu cần đăng nhập để lưu tiến độ, XP, streak hoặc xem dashboard cá nhân, nói rõ người dùng cần đăng nhập.
+   Không nói có tính năng chưa tồn tại. Hiện chưa có luồng đổi mật khẩu, chỉnh sửa hồ sơ, xóa tài khoản hoặc tạo lesson từ UI.
+   Nếu người dùng hỏi về kiến thức ASL, dùng tài liệu ASL trong RAG. Nếu hỏi cách dùng app, dùng tài liệu workflow này.
+
+Bản đồ điều hướng chính
+-----------------------
+
+Thanh điều hướng desktop có các mục:
+
+   Home -> /
+   Translator -> mặc định tới /translator/signtotext
+   Learn -> mặc định tới /learn/lesson
+   Leaderboard -> /leaderboard
+   Dictionary -> mặc định tới /dictionary/sign-alphabet
+   User -> /users, chỉ hiện cho tài khoản admin
+
+Các menu con:
+
+   Translator > Sign to Text -> /translator/signtotext
+   Translator > Text to Sign -> /translator/texttosign
+   Learn > Lesson -> /learn/lesson
+   Learn > Practice -> /learn/practice
+   Dictionary > Sign Alphabet -> /dictionary/sign-alphabet
+   Dictionary > Word Search -> /dictionary/word-search
+
+Trên mobile, bấm nút menu ở góc phải header, sau đó mở nhóm Translator, Learn hoặc Dictionary để chọn trang con.
+
+Luồng bắt đầu cho người dùng mới
+--------------------------------
+
+Khi người dùng hỏi "tôi mới vào thì bắt đầu từ đâu":
+
+1.  Vào /register để tạo tài khoản, hoặc /login nếu đã có tài khoản.
+2.  Sau khi đăng nhập, vào /learn/lesson để học bài đầu tiên.
+3.  Chọn một thẻ bài học, học qua flashcard/video.
+4.  Bấm Done ở cuối bài để lưu hoàn thành, nhận XP và cập nhật streak.
+5.  Vào /dashboard để xem tiến độ cá nhân.
+
+Nếu người dùng chưa muốn tạo tài khoản, vẫn có thể xem lesson, dictionary, translator và leaderboard, nhưng không lưu được tiến độ cá nhân khi hoàn thành bài học.
+
+Đăng ký, đăng nhập và tài khoản
+-------------------------------
+
+Trang đăng ký: /register
+
+Người dùng nhập:
+
+   DISPLAY NAME: tên hiển thị
+   EMAIL: email
+   PASSWORD: mật khẩu
+
+Sau đó bấm Create account. Nếu thành công, app lưu token và chuyển tới /dashboard.
+
+Trang đăng nhập: /login
+
+Người dùng nhập email và password rồi bấm Log in. Có nút Continue with Google trên trang đăng nhập để bắt đầu Google OAuth qua backend Node.js. Callback Google nằm ở /auth/google/callback và sẽ chuyển về /dashboard khi nhận token.
+
+Lưu ý: nút Google trên trang đăng ký hiện là nút giao diện, còn luồng Google hoạt động rõ ràng ở trang đăng nhập.
+
+Dashboard và theo dõi tiến độ
+-----------------------------
+
+Route: /dashboard
+
+Mục đích: xem tình trạng học tập cá nhân sau khi đăng nhập.
+
+Dashboard hiển thị:
+
+   Total XP: tổng điểm từ các lesson/practice đã hoàn thành.
+   Streak: số ngày học liên tiếp.
+   Lessons Done: số hoạt động đã hoàn thành.
+   Recent Activity: hoạt động gần đây trong khoảng 3 ngày.
+   Weekly Progress: biểu đồ tuần.
+   Recent Activity: danh sách các bài đã hoàn thành gần nhất.
+
+Khi người dùng hỏi "xem tiến độ ở đâu", trả lời: đăng nhập, vào /dashboard, xem các thẻ Total XP, Streak, Lessons Done và danh sách Recent Activity.
+
+Học bài theo flashcard
+----------------------
+
+Route: /learn/lesson
+
+Mục đích: học bài ASL theo thẻ lesson.
+
+Luồng thao tác:
+
+1.  Vào menu Learn > Lesson hoặc route /learn/lesson.
+2.  Chọn một thẻ lesson trong danh sách.
+3.  Xem các flashcard/video trong bài.
+4.  Dùng điều hướng trong flashcard để đi qua các thẻ.
+5.  Bấm Done khi học xong.
+6.  Nếu đã đăng nhập, backend lưu lịch sử học, cộng XP và cập nhật streak.
+
+Tiến độ từng lesson được lưu trong localStorage theo tài khoản/token, nên khi quay lại bài có thể tiếp tục từ vị trí gần nhất. Khi hoàn thành, thanh tiến độ hiển thị 100%.
+
+Dữ liệu seed mẫu có các lesson:
+
+   Basic Greetings: học chào hỏi cơ bản.
+   Numbers 1-10: học số từ 1 đến 10.
+   Daily Phrases: các cụm giao tiếp hằng ngày.
+   Emotions & Feelings: cách diễn đạt cảm xúc.
+
+Nếu người dùng hỏi "tôi muốn học chào hỏi", hướng dẫn vào /learn/lesson, chọn Basic Greetings.
+
+Nếu người dùng hỏi "tôi muốn học số", hướng dẫn vào /learn/lesson, chọn Numbers 1-10; nếu muốn xem từng số 1-20 bằng hình/video thì vào /dictionary/sign-alphabet và chọn NUMBER SIGNS.
+
+Luyện tập bằng quiz
+-------------------
+
+Route: /learn/practice
+
+Mục đích: làm bài practice dạng câu hỏi trắc nghiệm dựa trên video ký hiệu.
+
+Luồng thao tác:
+
+1.  Vào menu Learn > Practice hoặc route /learn/practice.
+2.  Chọn một thẻ practice.
+3.  Xem video ký hiệu ở bên phải.
+4.  Chọn đáp án A, B, C hoặc D.
+5.  Bấm Next để sang câu tiếp theo.
+6.  Ở câu cuối, bấm Done để hoàn thành.
+7.  Nếu đã đăng nhập, hệ thống lưu lịch sử, cộng XP và cập nhật streak.
+
+Dữ liệu seed mẫu có các practice:
+
+   Vocabulary Practice 1: luyện từ vựng phổ biến.
+   Alphabet Practice: luyện nhận biết chữ cái ASL.
+
+Nếu người dùng hỏi "tôi muốn ôn tập", "làm quiz", "kiểm tra mình nhớ chưa", hướng dẫn vào /learn/practice.
+
+Nếu người dùng hỏi "tôi muốn học ABC" hoặc "học bảng chữ cái", có hai hướng:
+
+   Muốn xem từng chữ cái: vào /dictionary/sign-alphabet, chọn LETTER SIGNS, bấm chữ A-Z.
+   Muốn làm bài luyện tập: vào /learn/practice, chọn Alphabet Practice.
+
+Từ điển ký hiệu
+---------------
+
+Trang tổng quan: /dictionary
+
+Trang này có hai lựa chọn:
+
+   Sign Alphabet -> /dictionary/sign-alphabet
+   Word Search -> /dictionary/word-search
+
+ Sign Alphabet
+
+Route: /dictionary/sign-alphabet
+
+Mục đích: học chữ cái A-Z và số 1-20 bằng ký hiệu.
+
+Luồng học chữ cái:
+
+1.  Vào /dictionary/sign-alphabet.
+2.  Chọn tab LETTER SIGNS.
+3.  Bấm chữ cái A-Z.
+4.  Xem danh sách Related Words ở cột trái.
+5.  Chọn một từ liên quan để xem video ở vùng Sign preview.
+
+Luồng học số:
+
+1.  Vào /dictionary/sign-alphabet.
+2.  Chọn tab NUMBER SIGNS.
+3.  Bấm số 1-20.
+4.  Chọn kết quả liên quan ở cột trái.
+5.  Xem video ở vùng preview.
+
+Nếu danh sách quá dài, dùng ô Search words... trong cột Related Words để lọc kết quả.
+
+ Word Search
+
+Route: /dictionary/word-search
+
+Mục đích: tìm video ký hiệu theo từ hoặc cụm từ.
+
+Luồng thao tác:
+
+1.  Vào menu Dictionary > Word Search.
+2.  Nhập từ/cụm từ vào ô Type a word, phrase, or number....
+3.  Chờ kết quả xuất hiện trong Related Words.
+4.  Bấm một kết quả bên trái.
+5.  Xem video ký hiệu ở vùng preview bên phải.
+
+Nếu người dùng hỏi "tôi muốn tìm ký hiệu của hello/thank you/water", hướng dẫn vào /dictionary/word-search, nhập từ tiếng Anh cần tìm, rồi chọn video phù hợp.
+
+Translator: dịch ký hiệu sang chữ
+---------------------------------
+
+Route: /translator/signtotext
+
+Mục đích: dùng webcam để nhận diện ký hiệu và hiển thị chữ.
+
+Luồng thao tác:
+
+1.  Vào menu Translator > Sign to Text.
+2.  Bấm Start Camera.
+3.  Cho phép trình duyệt truy cập camera.
+4.  Đứng trước camera sao cho thấy rõ tay và phần thân trên.
+5.  Thực hiện ký hiệu.
+6.  Kết quả nhận diện hiển thị trong panel Real-time Translation.
+7.  Có thể bấm Stop Camera để tắt camera.
+
+Kỹ thuật đang dùng:
+
+   Frontend dùng MediaPipe Holistic để lấy keypoints.
+   Mỗi lần dự đoán gửi chuỗi 30 frame, mỗi frame 1662 feature.
+   Backend FastAPI nhận ở /v1/action-detection/sign-to-text.
+   Model hiện có nhãn mặc định: hello, thanks, iloveyou, hoặc theo file labels nếu model có metadata riêng.
+
+Khi người dùng hỏi "camera không nhận", hướng dẫn:
+
+   Kiểm tra đã cấp quyền camera chưa.
+   Đảm bảo ánh sáng đủ.
+   Đưa cả hai tay và phần thân trên vào khung hình.
+   Không đứng quá sát camera.
+   Nếu trình duyệt chặn camera, mở quyền camera trong site settings rồi tải lại trang.
+
+Translator: dịch chữ sang ký hiệu
+---------------------------------
+
+Route: /translator/texttosign
+
+Mục đích: nhập câu chữ và tạo video ký hiệu tương ứng.
+
+Luồng thao tác:
+
+1.  Vào menu Translator > Text to Sign.
+2.  Nhập từ hoặc câu vào ô lớn bên trái.
+3.  Bấm Translate.
+4.  Video ký hiệu sinh ra hiển thị ở panel Generated Sign Video.
+5.  Có thể bấm các câu trong Recently Translated để dịch lại nhanh.
+6.  Bấm Clear để xóa danh sách câu gần đây trên UI.
+
+Backend FastAPI gọi Sign MT cloud function qua /v1/action-detection/text-to-sign. Ngôn ngữ mặc định là spoken language en và signed language ase (ASL).
+
+Nếu người dùng hỏi "tôi muốn biết câu này ký hiệu thế nào", hướng dẫn vào /translator/texttosign, nhập câu tiếng Anh rồi bấm Translate.
+
+Leaderboard
+-----------
+
+Route: /leaderboard
+
+Mục đích: xem top người học theo XP.
+
+Trang hiển thị:
+
+   Top 3 dạng podium.
+   Danh sách top 10 người dùng.
+   XP và streak của từng người.
+   Nếu đã đăng nhập, app cố lấy rank của người dùng hiện tại và đánh dấu YOU nếu nằm trong danh sách hiển thị.
+
+Nếu người dùng hỏi "xem bảng xếp hạng ở đâu", hướng dẫn vào /leaderboard.
+
+Trang admin Users
+-----------------
+
+Route: /users
+
+Mục đích: xem danh sách người dùng, chỉ dành cho admin.
+
+Điều kiện:
+
+   Người dùng phải đăng nhập.
+   Tài khoản phải có role admin.
+   Header chỉ thêm mục User cho admin.
+
+Trang hiển thị username, email và role. Nếu tài khoản không phải admin, trang báo không có quyền truy cập.
+
+Chatbot Assistant
+-----------------
+
+Chatbot là nút tròn ở góc dưới bên phải màn hình.
+
+Luồng dùng:
+
+1.  Bấm nút tròn có icon chat để mở SignLearn Assistant.
+2.  Nhập câu hỏi vào ô message.
+3.  Bấm Gửi hoặc nhấn Enter.
+4.  Chatbot gửi question, history và currentroute tới /api/chat.
+5.  Next.js proxy tiếp tới FastAPI /v1/chatbot/ask.
+6.  FastAPI RAG lấy context từ Chroma và trả về answer cùng sources.
+
+Chatbot nên tận dụng currentroute:
+
+   Nếu user đang ở /learn/lesson, ưu tiên hướng dẫn chọn lesson, mở flashcard và bấm Done.
+   Nếu user đang ở /learn/practice, ưu tiên hướng dẫn chọn đáp án, bấm Next và Done.
+   Nếu user đang ở /dictionary/sign-alphabet, ưu tiên hướng dẫn đổi LETTER SIGNS/NUMBER SIGNS, chọn ký hiệu và xem preview.
+   Nếu user đang ở /translator/signtotext, ưu tiên hướng dẫn bấm Start Camera.
+   Nếu user đang ở /translator/texttosign, ưu tiên hướng dẫn nhập câu và bấm Translate.
+
+Các câu hỏi thường gặp và câu trả lời định hướng
+------------------------------------------------
+
+Người dùng hỏi: "Tôi muốn học ABC thì bấm đâu?"
+
+Trả lời: Vào Dictionary > Sign Alphabet hoặc /dictionary/sign-alphabet, chọn LETTER SIGNS, rồi bấm từng chữ A-Z để xem hình và video. Nếu muốn làm bài kiểm tra chữ cái, vào /learn/practice và chọn Alphabet Practice.
+
+Người dùng hỏi: "Tôi muốn học số?"
+
+Trả lời: Vào /dictionary/sign-alphabet, chọn NUMBER SIGNS, bấm số 1-20 để xem video. Nếu muốn học theo bài, vào /learn/lesson và chọn Numbers 1-10.
+
+Người dùng hỏi: "Tôi muốn học chào hỏi?"
+
+Trả lời: Vào /learn/lesson, chọn bài Basic Greetings. Học hết flashcard rồi bấm Done để lưu tiến độ nếu đã đăng nhập.
+
+Người dùng hỏi: "Tôi muốn tra một từ?"
+
+Trả lời: Vào /dictionary/word-search, nhập từ tiếng Anh vào ô tìm kiếm, chọn kết quả trong Related Words, rồi xem video ở bên phải.
+
+Người dùng hỏi: "Tôi muốn dịch ký hiệu của mình sang chữ?"
+
+Trả lời: Vào /translator/signtotext, bấm Start Camera, cấp quyền camera, đứng rõ trong khung hình và thực hiện ký hiệu.
+
+Người dùng hỏi: "Tôi muốn dịch câu chữ sang ký hiệu?"
+
+Trả lời: Vào /translator/texttosign, nhập câu tiếng Anh, bấm Translate, video ký hiệu sẽ hiện ở panel bên phải.
+
+Người dùng hỏi: "Làm sao để lưu tiến độ?"
+
+Trả lời: Cần đăng nhập. Sau đó vào /learn/lesson hoặc /learn/practice, hoàn thành bài và bấm Done. App sẽ lưu lịch sử học, cộng XP và cập nhật streak.
+
+Người dùng hỏi: "Xem điểm XP và streak ở đâu?"
+
+Trả lời: Đăng nhập rồi vào /dashboard. Các chỉ số nằm trong các thẻ Total XP, Streak, Lessons Done và Recent Activity.
+
+Người dùng hỏi: "Xem ai học giỏi nhất ở đâu?"
+
+Trả lời: Vào /leaderboard để xem top 10 theo XP và streak.
+
+Người dùng hỏi: "Tôi là admin, quản lý user ở đâu?"
+
+Trả lời: Đăng nhập bằng tài khoản admin, sau đó vào /users hoặc bấm mục User trên header.
+
+Khả năng public và yêu cầu đăng nhập
+------------------------------------
+
+Không cần đăng nhập:
+
+   Xem trang chủ /.
+   Xem danh sách lesson/practice.
+   Mở lesson/practice để xem nội dung.
+   Dùng dictionary.
+   Dùng translator.
+   Xem top leaderboard.
+   Chat với assistant.
+
+Cần đăng nhập:
+
+   Hoàn thành lesson/practice để lưu lịch sử và cộng XP.
+   Xem dashboard cá nhân.
+   Xem learning history.
+   Xem rank cá nhân trên leaderboard.
+   Vào trang admin /users.
+
+Backend liên quan cho chatbot hiểu hệ thống
+-------------------------------------------
+
+Node.js backend xử lý:
+
+   Auth: /api/auth/register, /api/auth/login, /api/auth/profile, /api/auth/users, Google OAuth.
+   Learn: /api/learn/lessons, /api/learn/lessons/:lessonId, /api/learn/complete, /api/learn/history.
+   Dashboard: /api/dashboard.
+   Leaderboard: /api/leaderboard/top10, /api/leaderboard/rank.
+   Dictionary/translator data: /api/translator/dictionary, /api/translator/search, /api/translator/words.
+   Cloudinary sign videos: /api/videos/alphabet/:letter, /api/videos/numbers/:number.
+
+FastAPI backend xử lý:
+
+   Sign to text: /v1/action-detection/sign-to-text.
+   Text to sign: /v1/action-detection/text-to-sign.
+   Model info: /v1/action-detection/model-info.
+   Chatbot ask: /v1/chatbot/ask.
+   Chatbot ingest: /v1/chatbot/ingest.
+   Chatbot status: /v1/chatbot/status.
+
+Next.js frontend proxy:
+
+   /api/chat chuyển câu hỏi chatbot từ frontend sang FastAPI.
+
+Cập nhật tài liệu RAG
+---------------------
+
+File này được fastapibackend/app/services/projectindexer.py đưa trực tiếp vào danh sách file để ingest project docs. Sau khi sửa file này, nếu Chroma đã có dữ liệu cũ thì chatbot có thể chưa thấy nội dung mới.
+
+Để ingest lại từ đầu, xóa dữ liệu trong:
+
+D:\UET\TTNM\TUONGTACNGUOIMAY\fastapibackend\ragdata\chromadb\
+
+Sau đó restart FastAPI backend hoặc gọi endpoint ingest project/all để build lại dữ liệu RAG.
+
+Sign Language Learning Modules
+==============================
+
+Learning Modules
+----------------
+
+   Basic Greetings
+       Description: Learn how to greet people in sign language
+       Status: 100% Completed
+   Numbers 1-10
+       Description: Practice signing numbers from 1 to 10
+       Status: 100% Completed
+   Daily Phrases
+       Description: Learn useful phrases for daily communication
+       Status: 100% Completed
+   Emotions & Feelings
+       Description: Learn how to express emotions in sign language
+       Status: 100% Completed
+   Animals
+       Description: Learn animals in sign language
+       Status: 0% Completed
+   Time
+       Description: Learn time in sign language
+       Status: 0% Completed
+   Position
+       Description: Learn positions in sign language
+       Status: 0% Completed
+   Family
+       Description: Learn family vocabulary in sign language
+       Status: 0% Completed
+   Baby
+       Description: Learn baby's actions in sign language
+       Status: 0% Completed
+   Food
+       Description: Learn food vocabulary in sign language
+       Status: 0% Completed
+   School
+       Description: Learn school vocabulary in sign language
+       Status: 0% Completed
+   Transportation
+       Description: Learn transportation vocabulary in sign language
+       Status: 0% Completed
+   Colors
+       Description: Learn color vocabulary in sign language
+       Status: 0% Completed
+   Clothes
+       Description: Learn clothing vocabulary in sign language
+       Status: 0% Completed
+   Sports
+       Description: Learn sports vocabulary in sign language
+       Status: 0% Completed
+
+Practice Modules
+----------------
+
+   Family Practice
+       Description: Practice family vocabulary in sign language
+       Status: 0% Completed
+   Time Practice
+       Description: Practice time vocabulary in sign language
+       Status: 0% Completed
+   Animals Practice
+       Description: Practice animals in sign language
+       Status: 0% Completed
+   Food Practice
+       Description: Practice food vocabulary in sign language
+       Status: 0% Completed
+   Office Practice
+       Description: Practice office vocabulary in sign language
+       Status: 0% Completed
+   Baby Practice
+       Description: Practice baby's actions in sign language
+       Status: 0% Completed
+   School Practice
+       Description: Practice school vocabulary in sign language
+       Status: 0% Completed
+   Position Practice
+       Description: Practice position vocabulary in sign language
+       Status: 0% Completed
+   Vocabulary Practice 1
+       Description: Practice common vocabulary words
+       Status: 0% Completed
+   Travel Practice
+       Description: Practice travel vocabulary in sign language
+       Status: 0% Completed
+   Alphabet Practice
+       Description: Practice signing the alphabet
+       Status: 0% Completed
+   Transportation Practice
+       Description: Practice transportation vocabulary in sign language
+       Status: 0% Completed

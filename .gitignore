@@ -13,6 +13,9 @@ build/
 venv/
 env/
 
+**/.env
+fastapi_backend/.env
+
 # Node
 node_modules/
 

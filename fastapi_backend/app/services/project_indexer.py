@@ -29,6 +29,7 @@ class ProjectIndexer:
         target_paths = [
             self.root_dir / "README.md",
             self.root_dir / "nextjs-frontend" / "ARCHITECTURE.md",
+            self.root_dir / "nextjs-frontend" / "PROJECT_GUIDE_VI.md",
             self.root_dir / "nodejs-backend" / "API_GUIDE.md",
             self.root_dir / "nextjs-frontend" / "app",
             self.root_dir / "nextjs-frontend" / "components",

@@ -95,6 +95,7 @@ export default function LoginPage() {
         gridTemplateColumns: "minmax(320px, 44vw) 1fr",
         fontFamily: theme.fontFamily,
         background: "transparent",
+        paddingTop: "70px",
         overflow: "hidden",
         position: "relative",
       }}

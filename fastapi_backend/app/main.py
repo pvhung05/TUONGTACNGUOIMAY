@@ -14,15 +14,18 @@ logger = logging.getLogger(__name__)
 def run_auto_ingestion():
     try:
         engine = RAGEngine()
-        # Only ingest if collections are empty to speed up normal restarts,
-        # or we could force ingest every time. 
-        # The user requested auto-scan on startup.
-        logger.info("Auto-scanning and ingesting documents on startup...")
-        engine.ingest_asl_documents()
-        engine.ingest_project_files()
-        logger.info("Startup auto-ingestion complete.")
+        status = engine.get_status()
+        
+        # Only ingest if collections are empty to speed up normal restarts
+        if status["asl_chunks"] == 0 and status["project_chunks"] == 0:
+            logger.info("Database is empty. Auto-scanning and ingesting documents on startup...")
+            engine.ingest_asl_documents()
+            engine.ingest_project_files()
+            logger.info("Startup auto-ingestion complete.")
+        else:
+            logger.info(f"Database already has data ({status['asl_chunks']} ASL, {status['project_chunks']} Project chunks). Skipping auto-ingestion.")
     except Exception as e:
-        logger.error(f"Error during startup auto-ingestion: {e}")
+        logger.error(f"Error during startup auto-ingestion check: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

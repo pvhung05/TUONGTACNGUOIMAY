@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/Header";
 
-const HIDDEN_HEADER_PATHS = ["/login", "/register"];
+const HIDDEN_HEADER_PATHS: string[] = [];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

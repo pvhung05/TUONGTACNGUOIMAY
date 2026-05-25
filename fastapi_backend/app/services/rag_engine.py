@@ -8,12 +8,25 @@ from app.config import settings
 from app.services.document_loader import ASLDocumentLoader
 from app.services.project_indexer import ProjectIndexer
 import logging
+import time
+import unicodedata
 
 logger = logging.getLogger(__name__)
 
 class RAGEngine:
     _instance = None
     _initialized = False
+    _app_workflow_keywords = {
+        "app", "web", "website", "signlearn", "signlearno", "workflow", "flow",
+        "route", "page", "menu", "button", "click", "tap", "where", "how to use",
+        "dashboard", "lesson", "practice", "dictionary", "translator", "leaderboard",
+        "login", "register", "signup", "account", "profile", "admin", "user",
+        "xp", "streak", "progress", "camera", "done", "next", "back",
+        "ung dung", "trang", "luong", "quy trinh", "huong dan", "su dung",
+        "dung", "bam", "nhan", "vao dau", "o dau", "cho nao",
+        "dang nhap", "dang ky", "tai khoan", "tien do", "diem", "xep hang",
+        "bai hoc", "luyen tap", "tu dien", "dich", "nut",
+    }
 
     def __new__(cls):
         if cls._instance is None or not cls._initialized:
@@ -93,6 +106,46 @@ Quy tắc:
 [Context]:
 {context}
 """
+        self.system_prompt_template = """
+Bạn là SignLearn Assistant, chatbot trong ứng dụng học Ngôn ngữ Ký hiệu Mỹ (ASL).
+
+Phạm vi được phép trả lời:
+1. Kiến thức ASL: từ vựng, ngữ pháp, cấu trúc câu, fingerspelling, văn hóa Deaf, cách thực hiện ký hiệu.
+2. Workflow của app SignLearn: người dùng nên vào trang nào, bấm nút nào, dùng lesson/practice/dictionary/translator/dashboard ra sao.
+
+Quy tắc bắt buộc:
+- Luôn trả lời bằng tiếng Việt, ngắn gọn và trực tiếp.
+- Nếu câu hỏi không liên quan đến ASL hoặc cách dùng app SignLearn, hãy từ chối lịch sự và nói rằng bạn chỉ hỗ trợ ASL và SignLearn.
+- Với câu hỏi ASL thông thường, được dùng kiến thức chung của bạn; KHÔNG bị giới hạn bởi Context.
+- Context chỉ là tài liệu bổ sung về workflow/app. Dùng Context khi nó liên quan, nhưng không cần nhắc nguồn nếu không cần.
+- Nếu hỏi cách dùng app, ưu tiên hướng dẫn theo route và nút bấm cụ thể.
+- User đang ở route: {current_route}
+- Khi giải thích ký hiệu ASL, viết tên ký hiệu dạng in hoa khi phù hợp, ví dụ: THANK-YOU.
+
+[App Workflow Context - optional]:
+{context}
+"""
+
+    def _normalize_for_match(self, value: str) -> str:
+        lowered = value.lower()
+        return "".join(
+            char
+            for char in unicodedata.normalize("NFKD", lowered)
+            if not unicodedata.combining(char)
+        )
+
+    def _is_app_workflow_question(self, question: str, current_route: str) -> bool:
+        normalized_question = self._normalize_for_match(question)
+        normalized_route = self._normalize_for_match(current_route)
+
+        if any(keyword in normalized_question for keyword in self._app_workflow_keywords):
+            return True
+
+        route_context_tokens = {
+            "trang nay", "o day", "man nay", "bam gi", "lam gi",
+            "tiep theo", "how", "where", "what should i do",
+        }
+        return normalized_route != "/" and any(token in normalized_question for token in route_context_tokens)
         
     def ingest_asl_documents(self):
         logger.info("Starting ASL ingestion...")
@@ -104,6 +157,9 @@ Quy tắc:
             for i in range(0, len(docs), batch_size):
                 batch = docs[i:i+batch_size]
                 self.asl_vectorstore.add_documents(batch)
+                if i + batch_size < len(docs):
+                    logger.info("Waiting 10s to avoid rate limits...")
+                    time.sleep(10)
             logger.info(f"Ingested {len(docs)} ASL chunks.")
         else:
             logger.info("No ASL documents found to ingest.")
@@ -117,6 +173,9 @@ Quy tắc:
             for i in range(0, len(docs), batch_size):
                 batch = docs[i:i+batch_size]
                 self.project_vectorstore.add_documents(batch)
+                if i + batch_size < len(docs):
+                    logger.info("Waiting 10s to avoid rate limits...")
+                    time.sleep(10)
             logger.info(f"Ingested {len(docs)} Project chunks.")
         else:
             logger.info("No Project documents found to ingest.")
@@ -131,12 +190,9 @@ Quy tắc:
         }
 
     def ask(self, question: str, history: List[Dict[str, str]], current_route: str) -> Dict[str, Any]:
-        # Retrieve context from both stores
-        top_k = settings.RAG_TOP_K
-        asl_docs = self.asl_vectorstore.similarity_search(question, k=top_k)
-        project_docs = self.project_vectorstore.similarity_search(question, k=top_k)
-        
-        all_docs = asl_docs + project_docs
+        all_docs = []
+        if self._is_app_workflow_question(question, current_route):
+            all_docs = self.project_vectorstore.similarity_search(question, k=settings.RAG_TOP_K)
         
         context_parts = []
         sources = set()

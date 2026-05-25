@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MessageCircle, X } from "lucide-react";
+import { MessageCircle, X, ExternalLink } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearno/theme";
 import { usePathname } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 const FAB_SIZE = 60;
 const FAB_RIGHT = 24;
@@ -23,6 +24,7 @@ export function ChatbotBubble() {
   type Message = {
     role: "user" | "assistant";
     content: string;
+    sources?: string[];
   };
 
   const [messages, setMessages] = useState<Message[]>([
@@ -161,7 +163,10 @@ export function ChatbotBubble() {
       }
 
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.answer, sources: data.sources },
+      ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -285,7 +290,44 @@ export function ChatbotBubble() {
                     ...signlearnoText,
                   }}
                 >
-                  {msg.content}
+                  <div className="markdown-container">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p style={{ margin: "0 0 8px 0" }}>{children}</p>,
+                        ul: ({ children }) => <ul style={{ margin: "0 0 8px 0", paddingLeft: 20 }}>{children}</ul>,
+                        ol: ({ children }) => <ol style={{ margin: "0 0 8px 0", paddingLeft: 20 }}>{children}</ol>,
+                        li: ({ children }) => <li style={{ marginBottom: 4 }}>{children}</li>,
+                        code: ({ children }) => (
+                          <code style={{ background: "#f0f0f0", padding: "2px 4px", borderRadius: 4, fontSize: "0.9em" }}>
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                  
+                  {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                    <div 
+                      style={{ 
+                        marginTop: 12, 
+                        paddingTop: 8, 
+                        borderTop: `1px solid ${theme.colors.border}`,
+                        fontSize: 11,
+                        color: (theme.colors as any).textLight,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4, fontWeight: 600 }}>
+                        <ExternalLink size={12} /> Nguồn tham khảo:
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: 16, listStyleType: "circle" }}>
+                        {msg.sources.map((src, i) => (
+                          <li key={i} style={{ marginBottom: 2 }}>{src}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
