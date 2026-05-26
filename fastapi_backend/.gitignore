@@ -24,6 +24,8 @@ coverage/
 uvicorn.out.log
 uvicorn.err.log
 
+.env
+
 # OS
 .DS_Store
 Thumbs.db

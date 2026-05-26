@@ -5,6 +5,39 @@ import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearn
 import { completeLesson, getLearningHistory, getLessonById, getLessons, getStoredToken } from "@/lib/api";
 import type { Lesson } from "@/lib/api/backend";
 
+function isDirectVideoUrl(url: string): boolean {
+  const normalized = String(url || "").trim().toLowerCase();
+  return /\.(mp4|webm|ogg)(\?|#|$)/.test(normalized) || normalized.includes("/video/upload/");
+}
+
+function getEmbedUrl(url: string): string {
+  let embedUrl = String(url || "").trim();
+
+  try {
+    const parsed = new URL(embedUrl);
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const watchId = parsed.searchParams.get("v");
+      const shortsId = parsed.pathname.startsWith("/shorts/") ? parsed.pathname.split("/")[2] : "";
+      const videoId = watchId || shortsId;
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+    if (hostname === "youtu.be") {
+      const videoId = parsed.pathname.split("/").filter(Boolean)[0];
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+  } catch {
+    embedUrl = url;
+  }
+
+  const separator = embedUrl.includes("?") ? "&" : "?";
+  return `${embedUrl}${separator}autoplay=1&mute=1&rel=0&modestbranding=1`;
+}
+
 export default function PracticePage() {
   const storedToken = getStoredToken();
   const PRACTICE_PROGRESS_STORAGE_KEY = `practice_progress_v1:${storedToken ?? "guest"}`;
@@ -18,6 +51,7 @@ export default function PracticePage() {
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [practiceResult, setPracticeResult] = useState<{ correctCount: number; totalCount: number } | null>(null);
 
   const loadStoredPracticeProgress = (): Record<string, { index: number; total: number; percent: number }> => {
     if (typeof window === "undefined") return {};
@@ -142,6 +176,15 @@ export default function PracticePage() {
     });
   }, [selectedPractice, questionIndex, questions.length]);
 
+  useEffect(() => {
+    if (!practiceResult) return;
+    const timer = setTimeout(() => {
+      setPracticeResult(null);
+      setSelectedPractice(null);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [practiceResult]);
+
   const goPrev = () => {
     if (questionIndex === 0) return;
     const nextIndex = questionIndex - 1;
@@ -164,16 +207,22 @@ export default function PracticePage() {
 
     if (completedPracticeIds[selectedPractice._id]) {
       setStatusMessage(null);
+      setPracticeResult(null);
       setSelectedPractice(null);
       return;
     }
 
     setCompleting(true);
     try {
+      // Calculate correct answers
+      let correctCount = 0;
+      questions.forEach((question, index) => {
+        if (updatedAnswers[index] === question.correct) {
+          correctCount++;
+        }
+      });
+
       await completeLesson(selectedPractice._id);
-      const correctCount = questions.reduce((acc, question, idx) => {
-        return updatedAnswers[idx] === question.correct ? acc + 1 : acc;
-      }, 0);
       setCompletedPracticeIds((current) => ({ ...current, [selectedPractice._id]: true }));
       setPracticeProgressById((current) => {
         const total = questions.length || current[selectedPractice._id]?.total || 1;
@@ -185,7 +234,12 @@ export default function PracticePage() {
         return next;
       });
       setStatusMessage(null);
-      setSelectedPractice(null);
+      
+      // Show result instead of closing immediately
+      setPracticeResult({
+        correctCount,
+        totalCount: questions.length,
+      });
     } catch (nextError) {
       setStatusMessage(nextError instanceof Error ? nextError.message : "Failed to submit practice.");
     } finally {
@@ -194,7 +248,7 @@ export default function PracticePage() {
   };
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
+    <div style={{ maxWidth: selectedPractice ? 1220 : 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
         <p
@@ -207,12 +261,116 @@ export default function PracticePage() {
         </p>
       ) : null}
 
-      {selectedPractice ? (
+      {practiceResult ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            gap: 24,
+            marginTop: 24,
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 30,
+              border: `2px solid ${theme.colors.border}`,
+              background: theme.colors.surface,
+              padding: 40,
+              textAlign: "center",
+              boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+              maxWidth: 400,
+            }}
+          >
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 48,
+                fontWeight: 800,
+                color: theme.colors.green,
+                marginBottom: 16,
+              }}
+            >
+              ✓
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 24,
+                fontWeight: 800,
+                color: theme.colors.textStrong,
+                marginBottom: 24,
+              }}
+            >
+              Hoàn thành!
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 18,
+                fontWeight: 700,
+                color: theme.colors.textMuted,
+                marginBottom: 32,
+              }}
+            >
+              Bạn trả lời đúng
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 56,
+                fontWeight: 800,
+                color: theme.colors.green,
+                marginBottom: 8,
+              }}
+            >
+              {practiceResult.correctCount}/{practiceResult.totalCount}
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 14,
+                fontWeight: 600,
+                color: theme.colors.textMuted,
+                marginBottom: 32,
+              }}
+            >
+              câu hỏi
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPracticeResult(null);
+                setSelectedPractice(null);
+              }}
+              style={{
+                padding: "12px 32px",
+                borderRadius: 10,
+                border: "none",
+                borderBottom: `4px solid ${theme.colors.greenDark}`,
+                background: theme.colors.green,
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: 15,
+                color: "#fff",
+                ...signlearnoText,
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      ) : selectedPractice ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
               type="button"
-              onClick={() => setSelectedPractice(null)}
+              onClick={() => {
+                setPracticeResult(null);
+                setSelectedPractice(null);
+              }}
               style={{
                 padding: "8px 16px",
                 borderRadius: 10,
@@ -241,8 +399,20 @@ export default function PracticePage() {
           </div>
 
           {currentQuestion ? (
-            <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 420 }}>
-              <div style={{ flex: 1, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, borderBottom: `6px solid ${theme.colors.border}`, background: theme.colors.surface, display: "flex", flexDirection: "column", justifyContent: "center", padding: 28 }}>
+            <div
+              className="practice-question-shell"
+              style={{
+                display: "grid",
+                alignItems: "stretch",
+                minHeight: 430,
+                borderRadius: 30,
+                overflow: "hidden",
+                border: `2px solid ${theme.colors.border}`,
+                background: theme.colors.surface,
+                boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              <div className="practice-answer-panel" style={{ background: theme.colors.surface, display: "flex", flexDirection: "column", justifyContent: "center", padding: 28 }}>
                 <div style={{ ...signlearnoText, fontSize: 20, fontWeight: 800, color: theme.colors.textStrong, marginBottom: 16 }}>
                   Choose the correct answer
                 </div>
@@ -271,26 +441,27 @@ export default function PracticePage() {
                 })}
               </div>
 
-              <div style={{ flex: 1.15, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 360, border: `2px solid ${theme.colors.border}` }}>
-                <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 360, overflow: "hidden", background: "#000" }}>
+              <div className="practice-video-frame" style={{ overflow: "hidden", background: "#000", minHeight: 430, position: "relative" }}>
+                {isDirectVideoUrl(currentQuestion.url) ? (
+                  <video
+                    key={currentQuestion.url}
+                    src={currentQuestion.url}
+                    controls
+                    autoPlay
+                    muted
+                    playsInline
+                    className="practice-video-fill"
+                  />
+                ) : (
                   <iframe
                     key={currentQuestion.url}
-                    src={`${currentQuestion.url}${currentQuestion.url.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0&modestbranding=1`}
+                    src={getEmbedUrl(currentQuestion.url)}
                     title={`Practice question ${questionIndex + 1}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: "118%",
-                      height: "118%",
-                      border: "none",
-                      display: "block",
-                      transform: "translate(-50%, -50%)",
-                    }}
+                    className="practice-embed-fill"
                   />
-                </div>
+                )}
               </div>
             </div>
           ) : (
