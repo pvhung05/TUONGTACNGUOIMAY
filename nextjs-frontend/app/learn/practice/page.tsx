@@ -5,6 +5,39 @@ import { signlearnoTheme as theme, signlearnoText } from "@/components/signlearn
 import { completeLesson, getLearningHistory, getLessonById, getLessons, getStoredToken } from "@/lib/api";
 import type { Lesson } from "@/lib/api/backend";
 
+function isDirectVideoUrl(url: string): boolean {
+  const normalized = String(url || "").trim().toLowerCase();
+  return /\.(mp4|webm|ogg)(\?|#|$)/.test(normalized) || normalized.includes("/video/upload/");
+}
+
+function getEmbedUrl(url: string): string {
+  let embedUrl = String(url || "").trim();
+
+  try {
+    const parsed = new URL(embedUrl);
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const watchId = parsed.searchParams.get("v");
+      const shortsId = parsed.pathname.startsWith("/shorts/") ? parsed.pathname.split("/")[2] : "";
+      const videoId = watchId || shortsId;
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+    if (hostname === "youtu.be") {
+      const videoId = parsed.pathname.split("/").filter(Boolean)[0];
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+  } catch {
+    embedUrl = url;
+  }
+
+  const separator = embedUrl.includes("?") ? "&" : "?";
+  return `${embedUrl}${separator}autoplay=1&mute=1&rel=0&modestbranding=1`;
+}
+
 export default function PracticePage() {
   const storedToken = getStoredToken();
   const PRACTICE_PROGRESS_STORAGE_KEY = `practice_progress_v1:${storedToken ?? "guest"}`;
@@ -156,9 +189,6 @@ export default function PracticePage() {
     setCompleting(true);
     try {
       await completeLesson(selectedPractice._id);
-      const correctCount = questions.reduce((acc, question, idx) => {
-        return updatedAnswers[idx] === question.correct ? acc + 1 : acc;
-      }, 0);
       setCompletedPracticeIds((current) => ({ ...current, [selectedPractice._id]: true }));
       setPracticeProgressById((current) => {
         const total = questions.length || current[selectedPractice._id]?.total || 1;
@@ -179,7 +209,7 @@ export default function PracticePage() {
   };
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
+    <div style={{ maxWidth: selectedPractice ? 1220 : 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
         <p style={{ ...signlearnoText, color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red }}>
@@ -221,8 +251,20 @@ export default function PracticePage() {
           </div>
 
           {currentQuestion ? (
-            <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 360 }}>
-              <div style={{ flex: 1, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, borderBottom: `6px solid ${theme.colors.border}`, background: theme.colors.surface, display: "flex", flexDirection: "column", justifyContent: "center", padding: 28 }}>
+            <div
+              className="practice-question-shell"
+              style={{
+                display: "grid",
+                alignItems: "stretch",
+                minHeight: 430,
+                borderRadius: 30,
+                overflow: "hidden",
+                border: `2px solid ${theme.colors.border}`,
+                background: theme.colors.surface,
+                boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              <div className="practice-answer-panel" style={{ background: theme.colors.surface, display: "flex", flexDirection: "column", justifyContent: "center", padding: 28 }}>
                 <div style={{ ...signlearnoText, fontSize: 20, fontWeight: 800, color: theme.colors.textStrong, marginBottom: 16 }}>
                   Choose the correct answer
                 </div>
@@ -251,15 +293,27 @@ export default function PracticePage() {
                 })}
               </div>
 
-              <div style={{ flex: 1, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 280, border: `2px solid ${theme.colors.border}` }}>
-                <iframe
-                  key={currentQuestion.url}
-                  src={`${currentQuestion.url}${currentQuestion.url.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0&modestbranding=1`}
-                  title={`Practice question ${questionIndex + 1}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ width: "100%", height: "100%", border: "none", display: "block", minHeight: 340 }}
-                />
+              <div className="practice-video-frame" style={{ overflow: "hidden", background: "#000", minHeight: 430, position: "relative" }}>
+                {isDirectVideoUrl(currentQuestion.url) ? (
+                  <video
+                    key={currentQuestion.url}
+                    src={currentQuestion.url}
+                    controls
+                    autoPlay
+                    muted
+                    playsInline
+                    className="practice-video-fill"
+                  />
+                ) : (
+                  <iframe
+                    key={currentQuestion.url}
+                    src={getEmbedUrl(currentQuestion.url)}
+                    title={`Practice question ${questionIndex + 1}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="practice-embed-fill"
+                  />
+                )}
               </div>
             </div>
           ) : (
