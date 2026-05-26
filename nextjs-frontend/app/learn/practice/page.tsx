@@ -65,6 +65,21 @@ export default function PracticePage() {
     void load();
   }, []);
 
+  useEffect(() => {
+    const refreshPractices = async () => {
+      setLoading(true);
+      try {
+        const data = await getLessons("practice");
+        setPractices(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener("admin-content-created", refreshPractices);
+    return () => window.removeEventListener("admin-content-created", refreshPractices);
+  }, []);
+
   const practiceStyles = [
     { bg: "linear-gradient(180deg, #D7F7C7 0%, #BEEFA7 100%)", emoji: "🦁🐘" },
     { bg: "linear-gradient(180deg, #D8F3FF 0%, #BFEAFB 100%)", emoji: "👋" },
@@ -182,7 +197,12 @@ export default function PracticePage() {
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
-        <p style={{ ...signlearnoText, color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red }}>
+        <p
+          style={{
+            ...signlearnoText,
+            color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red,
+          }}
+        >
           {statusMessage}
         </p>
       ) : null}
@@ -221,7 +241,7 @@ export default function PracticePage() {
           </div>
 
           {currentQuestion ? (
-            <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 360 }}>
+            <div style={{ display: "flex", gap: 24, alignItems: "stretch", minHeight: 420 }}>
               <div style={{ flex: 1, borderRadius: theme.radius.card, border: `2px solid ${theme.colors.border}`, borderBottom: `6px solid ${theme.colors.border}`, background: theme.colors.surface, display: "flex", flexDirection: "column", justifyContent: "center", padding: 28 }}>
                 <div style={{ ...signlearnoText, fontSize: 20, fontWeight: 800, color: theme.colors.textStrong, marginBottom: 16 }}>
                   Choose the correct answer
@@ -251,15 +271,26 @@ export default function PracticePage() {
                 })}
               </div>
 
-              <div style={{ flex: 1, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 280, border: `2px solid ${theme.colors.border}` }}>
-                <iframe
-                  key={currentQuestion.url}
-                  src={`${currentQuestion.url}${currentQuestion.url.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0&modestbranding=1`}
-                  title={`Practice question ${questionIndex + 1}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ width: "100%", height: "100%", border: "none", display: "block", minHeight: 340 }}
-                />
+              <div style={{ flex: 1.15, borderRadius: theme.radius.card, overflow: "hidden", background: "#000", minHeight: 360, border: `2px solid ${theme.colors.border}` }}>
+                <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 360, overflow: "hidden", background: "#000" }}>
+                  <iframe
+                    key={currentQuestion.url}
+                    src={`${currentQuestion.url}${currentQuestion.url.includes("?") ? "&" : "?"}autoplay=1&mute=1&rel=0&modestbranding=1`}
+                    title={`Practice question ${questionIndex + 1}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: "118%",
+                      height: "118%",
+                      border: "none",
+                      display: "block",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ) : (
